@@ -11,6 +11,7 @@ import torch.utils.data
 import torchvision
 import pandas as pd
 from torch.utils.data import Dataset
+import json
 
 def InvarianceDataset(data_folder, label_folder, filenames):
     # map from file name to the list of iloc
@@ -18,7 +19,7 @@ def InvarianceDataset(data_folder, label_folder, filenames):
     batch_mask = torch.tensor([]) # shape: (num_files, MAX_VAR_NUM)
     var_names = {}
     batch_data = torch.tensor([]) # shape: (num_files, MAX_VAR_NUM, 512)
-    batch_label = torch.tensor([])
+    batch_label = []
     for filename in filenames:
         # check if "filename.csv" exists in the data_folder
         if (data_folder / filename).exists():
@@ -59,7 +60,10 @@ def InvarianceDataset(data_folder, label_folder, filenames):
         mask = torch.zeros(MAX_VAR_NUM)
         mask[:col_num] = 1
         batch_mask = torch.cat((batch_mask, mask.unsqueeze(0)), dim=0)
-        # do not touch labels for now
+        # read the label
+        with open(label_folder / (filename + ".json")) as f:
+            label = json.load(f)
+        batch_label.append(label)
     return batch_data, batch_mask, batch_label
                     
 
