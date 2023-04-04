@@ -1,0 +1,14 @@
+Things to consider:
+1. input shape
+for one program, the shape is [iter # x var #], usually [1000 x 6].
+It should be treated as a setence of 6 words. Each word has a dimension of 1000 elements
+
+2. output classifiers
+(1) If we use N output queries, then for the final output, there will be N items. From each item we will predict an equation/inequality.
+We need to use a classifier, with the options: x, x^2, xy, x^3, x^2*y, (x mod 2)
+design choice:
+a. 2 parallel classifier sequences
+first classifier sequence: each predicates the variables used for one item in the final addition: x, y, 1
+second classifier sequence: each predicates the degree of each variable in the first classifier: 2, 1, 0, => x^2*y.
+
+b. tree-structure output: maybe more complex, consider later
