@@ -18,7 +18,7 @@ def ReadInvarianceData(data_folder, label_folder, filenames):
     MAX_VAR_NUM = 6
     batch_mask = torch.tensor([]) # shape: (num_files, MAX_VAR_NUM)
     var_names = {}
-    batch_data = torch.tensor([]) # shape: (num_files, MAX_VAR_NUM, 512)
+    batch_data = [] # shape: (num_files, MAX_VAR_NUM, 512)
     batch_label = []
     for filename in filenames:
         # check if "filename.csv" exists in the data_folder
@@ -66,7 +66,7 @@ def ReadInvarianceData(data_folder, label_folder, filenames):
             # pad to 512
             data = torch.nn.functional.pad(data, (0, 512 - data.shape[1]))
         # append to batch_data
-        batch_data = torch.cat((batch_data, data.unsqueeze(0)), dim=0)
+        batch_data.append(data)
         # get the mask
         mask = torch.zeros(MAX_VAR_NUM, 512)
         mask[:col_num, :feature_size] = 1
@@ -81,13 +81,18 @@ def ReadInvarianceData(data_folder, label_folder, filenames):
 
 class InvarianceDateSet(Dataset):
     def __init__(self, data_folder, label_folder, filenames):
-        self.data, self.mask, self.label = ReadInvarianceData(data_folder, label_folder, filenames)
+        data, mask, label = ReadInvarianceData(data_folder, label_folder, filenames)
+        self.data = data
+        self.mask = mask
+        self.label = label
 
     def __getitem__(self, idx):
-        return self.data[idx], self.label[idx]
+        sample = {'image': self.data[idx], 'landmarks': self.label[idx]}
+        return sample
 
     def __len__(self):
         return len(self.label)
+
 
 def build(image_set, args):
     root = Path(args.invar_path)
