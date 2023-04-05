@@ -13,7 +13,7 @@ import pandas as pd
 from torch.utils.data import Dataset
 import json
 
-def InvarianceDataset(data_folder, label_folder, filenames):
+def ReadInvarianceData(data_folder, label_folder, filenames):
     # map from file name to the list of iloc
     MAX_VAR_NUM = 6
     batch_mask = torch.tensor([]) # shape: (num_files, MAX_VAR_NUM)
@@ -54,7 +54,9 @@ def InvarianceDataset(data_folder, label_folder, filenames):
         std_nonzero = torch.where(std != 0, std, torch.ones_like(std))
         data = data / std_nonzero
         # pad to MAX_VAR_NUM
+        data = data.transpose(0, 1)
         data = torch.nn.functional.pad(data, (0, MAX_VAR_NUM - col_num))
+        data = data.transpose(0, 1)
         # assert number of rows must be at least 512
         feature_size = data.shape[1]
         if feature_size >= 512:
@@ -70,11 +72,22 @@ def InvarianceDataset(data_folder, label_folder, filenames):
         mask[:col_num, :feature_size] = 1
         batch_mask = torch.cat((batch_mask, mask.unsqueeze(0)), dim=0)
         # read the label
-        with open(label_folder / (filename + ".json")) as f:
+        json_filename = filename + ".json"
+        with open(label_folder / json_filename) as f:
             label = json.load(f)
         batch_label.append(label)
     return batch_data, batch_mask, batch_label
                     
+
+class InvarianceDateSet(Dataset):
+    def __init__(self, data_folder, label_folder, filenames):
+        self.data, self.mask, self.label = ReadInvarianceData(data_folder, label_folder, filenames)
+
+    def __getitem__(self, idx):
+        return self.data[idx], self.label[idx]
+
+    def __len__(self):
+        return len(self.label)
 
 def build(image_set, args):
     root = Path(args.invar_path)
@@ -86,5 +99,5 @@ def build(image_set, args):
 
     data_folder, label_folder = PATHS[image_set]
     # currently only load the data for ps2
-    dataset = InvarianceDataset(data_folder, label_folder, ["ps2", "ps3"])
+    dataset = InvarianceDateSet(data_folder, label_folder, ["ps2", "ps3"])
     return dataset
