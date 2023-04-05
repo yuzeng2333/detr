@@ -87,8 +87,9 @@ class InvarianceDateSet(Dataset):
         self.label = label
 
     def __getitem__(self, idx):
-        sample = {'image': self.data[idx], 'landmarks': self.label[idx]}
-        return sample
+        #sample = {'image': self.data[idx], 'landmarks': self.label[idx]}
+        #return sample
+        return self.data[idx], self.label[idx]
 
     def __len__(self):
         return len(self.label)
