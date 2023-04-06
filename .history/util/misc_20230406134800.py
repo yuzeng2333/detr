@@ -467,11 +467,3 @@ def interpolate(input, size=None, scale_factor=None, mode="nearest", align_corne
     else:
         return torchvision.ops.misc.interpolate(input, size, scale_factor, mode, align_corners)
 
-def custom_collate_fn(batch):
-    data, labels = zip(*batch)
-
-    # Stack the data tensors
-    data = torch.stack(data, dim=0)
-
-    # Now, instead of returning a single tensor for the labels, return the two lists.
-    return data, labels

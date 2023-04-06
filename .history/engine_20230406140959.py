@@ -160,7 +160,7 @@ def train_invar(model, dataloader, criterion, optimizer, device):
     for i in range(iteration):
         for batch in dataloader:
             inputs, targets = batch
-            inputs = inputs.to(device)
+            inputs inputs.to(device), targets.to(device)
 
             optimizer.zero_grad()
             outputs = model(inputs)

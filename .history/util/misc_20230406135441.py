@@ -473,5 +473,9 @@ def custom_collate_fn(batch):
     # Stack the data tensors
     data = torch.stack(data, dim=0)
 
+    # Since your labels are dicts with two keys and each value is a list of variable length,
+    # you can create two separate lists for each key and handle them accordingly.
+
+
     # Now, instead of returning a single tensor for the labels, return the two lists.
-    return data, labels
+    return data, (labels_key1, labels_key2)

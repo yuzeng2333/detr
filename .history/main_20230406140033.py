@@ -15,7 +15,8 @@ import util.misc as utils
 from datasets import build_dataset, get_coco_api_from_dataset
 from engine import evaluate, train_invar
 from models import build_model
-from util.misc import custom_collate_fn as collate_fn
+from 
+
 
 def get_args_parser():
     parser = argparse.ArgumentParser('Set transformer detector', add_help=False)
@@ -145,8 +146,8 @@ def main(args):
 
     batch_size = 2
 
-    data_loader_train = DataLoader(dataset_train, batch_size=batch_size, collate_fn=collate_fn, shuffle=True)
-    data_loader_val = DataLoader(dataset_val, args.batch_size, collate_fn=collate_fn, shuffle=True)
+    data_loader_train = DataLoader(dataset_train, batch_size=batch_size, shuffle=True)
+    data_loader_val = DataLoader(dataset_val, args.batch_size, shuffle=True)
 
     if args.dataset_file == "coco_panoptic":
         # We also evaluate AP during panoptic training, on original coco DS
