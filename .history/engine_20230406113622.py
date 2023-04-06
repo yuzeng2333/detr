@@ -151,7 +151,7 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
     return stats, coco_evaluator
 
 
-def train_invar(model, dataloader, criterion, optimizer, device):
+def train_invar(model, ):
     model.train()
     iteration = 20
     print_loss = 0

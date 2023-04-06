@@ -13,7 +13,7 @@ from torch.utils.data import DataLoader, DistributedSampler
 import datasets
 import util.misc as utils
 from datasets import build_dataset, get_coco_api_from_dataset
-from engine import evaluate, train_invar
+from engine import evaluate, train_one_epoch
 from models import build_model
 
 
@@ -180,7 +180,7 @@ def main(args):
         return
 
     print("Start training")
-    train_invar(model, data_loader_train, criterion, optimizer, device)
+    t
 
     start_time = time.time()
     

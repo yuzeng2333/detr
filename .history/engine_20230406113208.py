@@ -150,33 +150,3 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
         stats['PQ_st'] = panoptic_res["Stuff"]
     return stats, coco_evaluator
 
-
-def train_invar(model, dataloader, criterion, optimizer, device):
-    model.train()
-    iteration = 20
-    print_loss = 0
-    print_outputs = 0
-    print_weights = 0
-    for i in range(iteration):
-        for batch in dataloader:
-            inputs, targets = batch
-            inputs, targets = inputs.to(device), targets.to(device)
-
-            optimizer.zero_grad()
-            outputs = model(inputs)
-            #loss = criterion(outputs.view(-1, outputs.size(-1)), targets.view(-1))
-            loss = criterion(outputs, targets)
-            # print loss and iteration numbers
-            if(print_loss == 1):
-                print("Loss: ", loss.item())
-            if print_outputs == 1:
-                print("outputs: ", outputs)
-            # print the weights
-            if print_weights == 1:
-                print("weights: ", model.fc.weight)
-            # stop if loss is nan
-            if torch.isnan(outputs).any():        
-                print("Found NaN at index")
-                return
-            loss.backward()
-            optimizer.step()

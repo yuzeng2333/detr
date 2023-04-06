@@ -180,7 +180,7 @@ def main(args):
         return
 
     print("Start training")
-    train_invar(model, data_loader_train, criterion, optimizer, device)
+    train_invar(model, data_loader_train, criterionoptimizer, device)
 
     start_time = time.time()
     

@@ -151,12 +151,13 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
     return stats, coco_evaluator
 
 
-def train_invar(model, dataloader, criterion, optimizer, device):
+def train_invar(model, dataloader, criterion, optimizer, device:
     model.train()
     iteration = 20
     print_loss = 0
     print_outputs = 0
     print_weights = 0
+    
     for i in range(iteration):
         for batch in dataloader:
             inputs, targets = batch

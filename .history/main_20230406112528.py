@@ -13,7 +13,7 @@ from torch.utils.data import DataLoader, DistributedSampler
 import datasets
 import util.misc as utils
 from datasets import build_dataset, get_coco_api_from_dataset
-from engine import evaluate, train_invar
+from engine import evaluate, train_one_epoch
 from models import build_model
 
 
@@ -143,8 +143,6 @@ def main(args):
     dataset_train = build_dataset(image_set='train', args=args)
     dataset_val = build_dataset(image_set='val', args=args)
 
-    batch_size = 2
-
     data_loader_train = DataLoader(dataset_train, batch_size=batch_size, shuffle=True)
     data_loader_val = DataLoader(dataset_val, args.batch_size, shuffle=True)
 
@@ -180,7 +178,7 @@ def main(args):
         return
 
     print("Start training")
-    train_invar(model, data_loader_train, criterion, optimizer, device)
+
 
     start_time = time.time()
     

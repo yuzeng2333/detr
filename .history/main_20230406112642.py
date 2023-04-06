@@ -13,7 +13,7 @@ from torch.utils.data import DataLoader, DistributedSampler
 import datasets
 import util.misc as utils
 from datasets import build_dataset, get_coco_api_from_dataset
-from engine import evaluate, train_invar
+from engine import evaluate, train_one_epoch
 from models import build_model
 
 
@@ -180,7 +180,31 @@ def main(args):
         return
 
     print("Start training")
-    train_invar(model, data_loader_train, criterion, optimizer, device)
+    model.train()
+        iteration = 20
+    for i in range(iteration):
+        for batch in dataloader:
+            inputs, targets = batch
+            inputs, targets = inputs.to(device), targets.to(device)
+
+            optimizer.zero_grad()
+            outputs = model(inputs)
+            #loss = criterion(outputs.view(-1, outputs.size(-1)), targets.view(-1))
+            loss = criterion(outputs, targets)
+            # print loss and iteration numbers
+            if(print_loss == 1):
+                print("Loss: ", loss.item())
+            if print_outputs == 1:
+                print("outputs: ", outputs)
+            # print the weights
+            if print_weights == 1:
+                print("weights: ", model.fc.weight)
+            # stop if loss is nan
+            if torch.isnan(outputs).any():        
+                print("Found NaN at index")
+                return
+            loss.backward()
+            optimizer.step()
 
     start_time = time.time()
     
