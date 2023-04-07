@@ -48,7 +48,8 @@ class InvarTransformer(nn.Module):
         tgt = self.query_embed.weight.unsqueeze(1).repeat(1, bs, 1)
 
         # Pass the input and target through the transformer
-        output = self.transformer(src_with_pos, tgt, src_key_padding_mask=src_mask)
+        key_padding_mask = (src_mask != 0).any(dim=-1)
+        output = self.transformer(src_with_pos, tgt, src_key_padding_mask=key_padding_mask)
 
         # Transpose the output back to the shape (batch_size, seq_length, d_model)
         output = output.transpose(0, 1)
@@ -60,7 +61,7 @@ class InvarTransformer(nn.Module):
 #src_mask = torch.ones(batch_size, 6, 512).bool()  # Assuming no padding in this example
 
 
-def build_transformer(args):
+def build_transformer():
     return InvarTransformer()
 
 
