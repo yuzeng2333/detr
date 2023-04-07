@@ -29,7 +29,7 @@ class InvarHungarianMatcher(nn.Module):
         self.cost_op = cost_op
         assert cost_eq != 0 or cost_op != 0, "all costs cant be 0"
 
-    def convert_to_one_hot(self, op_query_list):
+    def convert_op_to_one_hot(self, op_query_list):
         one_hot = torch.zeros(len(op_idx))
         for op_list in op_query_list:
             # assert the op should be inside op_idx
@@ -37,6 +37,17 @@ class InvarHungarianMatcher(nn.Module):
             one_hot[op_idx[op]] = 1
         return one_hot
 
+    def convert_eq_to_one_hot(self, eq_query_list):
+        one_hot = torch.zeros(3)
+        for eq in eq_query_list:
+            if eq == 'eq':
+                one_hot[0] = 1
+            elif eq == 'ineq':
+                one_hot[1] = 1
+            else:
+                one_hot[2] = 1
+        return one_hot
+    
     @torch.no_grad()
     def forward(self, outputs, targets):
         """ Performs the matching
@@ -77,8 +88,8 @@ class InvarHungarianMatcher(nn.Module):
         out_eq = outputs["pred_eq"].flatten(0, 1).softmax(-1)  # [batch_size * num_queries, 3]
 
         # Also concat the target labels and boxes
-        tgt_op = torch.cat([self.convert_to_one_hot(v["op"]) for v in targets]) # [all_num_ops]
-        tgt_eq = torch.cat([v["eq"] for v in targets]) # [all_num_eq]
+        tgt_op = torch.cat([self.convert_op_to_one_hot(v["op"]) for v in targets]) # [all_num_ops]
+        tgt_eq = torch.cat([self.convert_eq_to_one_hot(v["eq"]) for v in targets]) # [all_num_eq]
 
         # Compute the classification cost. Contrary to the loss, we don't use the NLL,
         # but approximate it in 1 - proba[target class].
