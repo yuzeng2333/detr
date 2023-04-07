@@ -15,7 +15,7 @@ from .backbone import build_backbone
 from .invar_matcher import build_matcher
 from .segmentation import (DETRsegm, PostProcessPanoptic, PostProcessSegm,
                            dice_loss, sigmoid_focal_loss)
-from .invar_transformer import build_transformer
+from .transformer import build_transformer
 from datasets.invar_spec import op_idx
 
 
@@ -58,9 +58,9 @@ class DETR(nn.Module):
                - "aux_outputs": Optional, only returned when auxilary losses are activated. It is a list of
                                 dictionnaries containing the two above keys for each decoder layer.
         """
-        # pos is a tensor with the same shape as data, but is all zero
-
-        hs = self.transformer(data, mask)
+        # pos has the same shape as data, but is all zero
+        
+        hs = self.transformer(data, mask, self.query_embed.weight, pos[-1])[0]
 
         outputs_eq = self.eq_embed(hs)
         outputs_op = self.op_embed(hs).sigmoid()
@@ -314,7 +314,7 @@ def build(args):
 
     backbone = build_backbone(args)
 
-    transformer = build_transformer()
+    transformer = build_transformer(args)
 
     model = DETR(
         backbone,

@@ -60,7 +60,7 @@ class DETR(nn.Module):
         """
         # pos is a tensor with the same shape as data, but is all zero
 
-        hs = self.transformer(data, mask)
+        hs = self.transformer(data, mask
 
         outputs_eq = self.eq_embed(hs)
         outputs_op = self.op_embed(hs).sigmoid()

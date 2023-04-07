@@ -163,7 +163,7 @@ def train_invar(model, dataloader, criterion, optimizer, device):
             inputs = inputs.to(device)
 
             optimizer.zero_grad()
-            outputs = model(inputs, masks)
+            outputs = model(inputs)
             #loss = criterion(outputs.view(-1, outputs.size(-1)), targets.view(-1))
             loss = criterion(outputs, targets)
             # print loss and iteration numbers

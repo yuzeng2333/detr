@@ -98,4 +98,3 @@ class InvarHungarianMatcher(nn.Module):
 
 
 def build_matcher(args):
-    return InvarHungarianMatcher()

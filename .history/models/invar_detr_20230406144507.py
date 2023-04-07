@@ -15,13 +15,13 @@ from .backbone import build_backbone
 from .invar_matcher import build_matcher
 from .segmentation import (DETRsegm, PostProcessPanoptic, PostProcessSegm,
                            dice_loss, sigmoid_focal_loss)
-from .invar_transformer import build_transformer
+from .transformer import build_transformer
 from datasets.invar_spec import op_idx
 
 
 class DETR(nn.Module):
     """ This is the DETR module that performs object detection """
-    def __init__(self, backbone, transformer, num_queries, num_eq=2, num_classes=0, num_items=10, num_op=6, aux_loss=False):
+    def __init__(self, backbone, transformer, num_eq=2, num_classes=0, num_items=10, num_op=, num_queries, aux_loss=False):
         """ Initializes the model.
         Parameters:
             backbone: torch module of the backbone to be used. See backbone.py
@@ -43,7 +43,7 @@ class DETR(nn.Module):
         self.backbone = backbone
         self.aux_loss = aux_loss
 
-    def forward(self, data, mask):
+    def forward(self, samples: NestedTensor):
         """ The forward expects a NestedTensor, which consists of:
                - samples.tensor: batched images, of shape [batch_size x 3 x H x W]
                - samples.mask: a binary mask of shape [batch_size x H x W], containing 1 on padded pixels
@@ -58,9 +58,13 @@ class DETR(nn.Module):
                - "aux_outputs": Optional, only returned when auxilary losses are activated. It is a list of
                                 dictionnaries containing the two above keys for each decoder layer.
         """
-        # pos is a tensor with the same shape as data, but is all zero
+        if isinstance(samples, (list, torch.Tensor)):
+            samples = nested_tensor_from_tensor_list(samples)
+        features, pos = self.backbone(samples)
 
-        hs = self.transformer(data, mask)
+        src, mask = features[-1].decompose()
+        assert mask is not None
+        hs = self.transformer(self.input_proj(src), mask, self.query_embed.weight, pos[-1])[0]
 
         outputs_eq = self.eq_embed(hs)
         outputs_op = self.op_embed(hs).sigmoid()
@@ -314,7 +318,7 @@ def build(args):
 
     backbone = build_backbone(args)
 
-    transformer = build_transformer()
+    transformer = build_transformer(args)
 
     model = DETR(
         backbone,

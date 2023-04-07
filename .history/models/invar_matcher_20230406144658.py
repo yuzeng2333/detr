@@ -98,4 +98,4 @@ class InvarHungarianMatcher(nn.Module):
 
 
 def build_matcher(args):
-    return InvarHungarianMatcher()
+    return InvarHungarianMatcher(cost_eq=args.cost_eq, cost_op=args.set_cost_op)
