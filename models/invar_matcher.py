@@ -29,9 +29,9 @@ class InvarHungarianMatcher(nn.Module):
         self.cost_op = cost_op
         assert cost_eq != 0 or cost_op != 0, "all costs cant be 0"
 
-    def convert_to_one_hot(self, op_list):
+    def convert_to_one_hot(self, op_query_list):
         one_hot = torch.zeros(len(op_idx))
-        for op in op_list:
+        for op_list in op_query_list:
             # assert the op should be inside op_idx
             assert op in op_idx
             one_hot[op_idx[op]] = 1

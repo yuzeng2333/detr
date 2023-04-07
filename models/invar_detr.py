@@ -64,7 +64,7 @@ class DETR(nn.Module):
 
         outputs_eq = self.eq_embed(hs)
         outputs_op = self.op_embed(hs).sigmoid()
-        out = {'pred_logits': outputs_eq[-1], 'pred_boxes': outputs_op[-1]}
+        out = {'pred_eq': outputs_eq, 'pred_op': outputs_op}
         if self.aux_loss:
             out['aux_outputs'] = self._set_aux_loss(outputs_eq, outputs_op)
         return out
