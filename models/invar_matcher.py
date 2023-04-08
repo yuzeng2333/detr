@@ -39,12 +39,17 @@ class InvarHungarianMatcher(nn.Module):
         return one_hot
 
     def convert_eq_to_idx(self, eq_query_list):
-        idx = 2
+        # idx is a tensor with the same length as eq_query_list
+        idx = torch.zeros(len(eq_query_list)) 
+        i = 0
         for eq in eq_query_list:
             if eq == 'eq':
-                idx = 0
+                idx[i] = 0
             elif eq == 'ineq':
-                idx = 1
+                idx[i] = 1
+            else:
+                idx[i] = 2
+            i += 1
         return idx
     
     @torch.no_grad()
