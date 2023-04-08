@@ -98,18 +98,18 @@ class InvarHungarianMatcher(nn.Module):
         tgt_eq = tgt_eq.long()
         # construct tgt_op explicitly
         num_eqs = tgt_eq.shape[0]
-        num_queries = out_eq.shape[0]
-        tgt_op = torch.zeros(num_queries, num_eqs)
+        num_total_queries = out_eq.shape[0]
+        cost_op = torch.zeros(num_total_queries, num_eqs)
         col = 0
         for v in targets:
             op_query_list = v["op"]
             for op_list in op_query_list:
                 # every op_list has a column in tgt_op
-                for row in range(num_queries):
+                for row in range(num_total_queries):
                     total_prob = 0
                     for op in op_list:
                         total_prob += out_op[row, op_idx[op]]
-                    tgt_op[row, col] = total_prob
+                    cost_op[row, col] = total_prob
                 col += 1
         
         # Compute the classification cost. Contrary to the loss, we don't use the NLL,
@@ -117,8 +117,7 @@ class InvarHungarianMatcher(nn.Module):
         # The 1 is a constant that doesn't change the matching, it can be ommitted.
         cost_eq = -out_eq[:, tgt_eq]
         
-        # Compute the L1 cost between boxes
-        cost_op = torch.cdist(out_op, tgt_op, p=1)
+        cost_op = -cost_op
 
         # Final cost matrix
         C = self.cost_eq * cost_eq + self.cost_op * cost_op
