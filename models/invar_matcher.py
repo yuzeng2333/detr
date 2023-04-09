@@ -73,7 +73,7 @@ class InvarHungarianMatcher(nn.Module):
             For each batch element, it holds:
                 len(index_i) = len(index_j) = min(num_queries, num_target_boxes)
         """
-        bs, num_queries = outputs["pred_op"].shape[:2]
+        bs, num_queries = outputs["op"].shape[:2]
 
         """
         If we predict both the vars and corresponding ops, the output shape would be like:
@@ -88,8 +88,8 @@ class InvarHungarianMatcher(nn.Module):
         """        
 
         # We flatten to compute the cost matrices in a batch
-        out_op = outputs["pred_op"].flatten(0, 1).softmax(-1)  # [batch_size * num_queries, num_op], num_op is the max types of op
-        out_eq = outputs["pred_eq"].flatten(0, 1).softmax(-1)  # [batch_size * num_queries, 3]
+        out_op = outputs["op"].flatten(0, 1).softmax(-1)  # [batch_size * num_queries, num_op], num_op is the max types of op
+        out_eq = outputs["eq"].flatten(0, 1).softmax(-1)  # [batch_size * num_queries, 3]
 
         # Also concat the target labels and boxes
         #tgt_op = torch.cat([self.convert_op_to_idx(v["op"]) for v in targets]) # [all_num_ops]

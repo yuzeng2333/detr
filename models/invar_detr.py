@@ -64,7 +64,7 @@ class DETR(nn.Module):
 
         outputs_eq = self.eq_embed(hs)
         outputs_op = self.op_embed(hs).sigmoid()
-        out = {'pred_eq': outputs_eq, 'pred_op': outputs_op}
+        out = {'eq': outputs_eq, 'op': outputs_op}
         if self.aux_loss:
             out['aux_outputs'] = self._set_aux_loss(outputs_eq, outputs_op)
         return out
@@ -338,7 +338,7 @@ def build(args):
             aux_weight_dict.update({k + f'_{i}': v for k, v in weight_dict.items()})
         weight_dict.update(aux_weight_dict)
 
-    losses = ['labels', 'boxes', 'cardinality']
+    losses = ['eq', 'op']
     if args.masks:
         losses += ["masks"]
     criterion = SetCriterion(num_classes, matcher=matcher, weight_dict=weight_dict,
