@@ -120,13 +120,35 @@ class InvarHungarianMatcher(nn.Module):
         cost_op = -cost_op
 
         # Final cost matrix
+        # batch_size = 2 (2 images), num_queries = 5 
+        # (upper limit of number of predicted equations in each image),
+        # true number of equations in image 1 = 2, image 2 = 2, num_total_eqs is 4
+        # shape of C: [batch_size * num_queries, num_total_eqs] = [10, 4]
         C = self.cost_eq * cost_eq + self.cost_op * cost_op
-        C = C.view(bs, num_queries, -1).cpu()
+        C = C.view(bs, num_queries, -1).cpu() # shape: [batch_size, num_queries, num_total_eqs] = [2, 5, 4]
 
-        sizes = [len(v["op"]) for v in targets]
-        indices = [linear_sum_assignment(c[i]) for i, c in enumerate(C.split(sizes, -1))]
-        return [(torch.as_tensor(i, dtype=torch.int64), torch.as_tensor(j, dtype=torch.int64)) for i, j in indices]
-
+        sizes = [len(v["op"]) for v in targets] # [2, 2]: true number of equations in each image
+        #indices = [linear_sum_assignment(c[i]) for i, c in enumerate(C.split(sizes, -1))]
+        indices = []
+        C_split = C.split(sizes, -1) # two tensors, each has shape [2, 5, 2]
+        for i, c in enumerate(C_split): # i is indices [0, 1]; c is tensor of shape [2, 5, 2]
+            # c has tensors for two images, so we need to index it
+            # c[i] is the pedict for one image [5, 2]
+            # col_indices are always [0, 1] since all the true labels are always selected
+            # row_indices are the indices of the selected predictions in 5 queries
+            row_indices, col_indices = linear_sum_assignment(c[i]) 
+            current_indices = (row_indices, col_indices)
+            indices.append(current_indices)
+        ## the indices is a list of tuple, each tuple contains two lists, one for row indices, one for col indices
+        ## the row list at index i corresponds to the col list at index i
+        ## row[i] = j means the i-th query is matched to the j-th target
+        #ret = [(torch.as_tensor(i, dtype=torch.int64), torch.as_tensor(j, dtype=torch.int64)) for i, j in indices]
+        ret = []
+        for i, j in indices:
+            i_tensor = torch.as_tensor(i, dtype=torch.int64)
+            j_tensor = torch.as_tensor(j, dtype=torch.int64)
+            ret.append((i_tensor, j_tensor))
+        return ret
 
 def build_matcher(args):
     return InvarHungarianMatcher()

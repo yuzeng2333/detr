@@ -17,6 +17,7 @@ from .segmentation import (DETRsegm, PostProcessPanoptic, PostProcessSegm,
                            dice_loss, sigmoid_focal_loss)
 from .invar_transformer import build_transformer
 from datasets.invar_spec import op_idx
+from datasets.eq_spec import eq_idx
 
 
 class DETR(nn.Module):
@@ -103,6 +104,12 @@ class SetCriterion(nn.Module):
         empty_weight[-1] = self.eos_coef
         self.register_buffer('empty_weight', empty_weight)
 
+    def convert_eq_to_idx(self, eq):
+        assert eq in eq_idx
+        one_hot = torch.zeros(len(eq_idx)+1)
+        one_hot[eq_idx[eq]] = 1
+        return one_hot
+
     def loss_labels(self, outputs, targets, indices, num_boxes, log=True):
         """Classification loss (NLL)
         targets dicts must contain the key "labels" containing a tensor of dim [nb_target_boxes]
@@ -110,8 +117,24 @@ class SetCriterion(nn.Module):
         assert 'eq' in outputs
         src_logits = outputs['eq'] # [batch_size x num_queries x (num_eq + 1)] num_eq == 2
 
+        # idx has two parts, the first part is the batch index, the second part is the index of the query
         idx = self._get_src_permutation_idx(indices)
-        target_classes_o = torch.cat([t["eq"][J] for t, (_, J) in zip(targets, indices)])
+        #target_classes_o = torch.cat([t["eq"][J] for t, (_, J) in zip(targets, indices)])
+        target_classes_o_list = []
+        for t, (_, J) in zip(targets, indices):
+            # convert J from tensor to a list
+            J = J.tolist()
+            for j in J:
+                target_classes_o_i = t["eq"][j]
+                # convert to one-hot
+                one_hot = self.convert_eq_to_idx(target_classes_o_i)
+                target_classes_o_list.append(one_hot)
+        # convert the list to a tensor
+        #target_classes_o_list = torch.tensor(target_classes_o_list)
+        # ground truth labels for each matched object
+        target_classes_o = torch.cat(target_classes_o_list)
+
+        # initialize the target classes with the no-object class
         target_classes = torch.full(src_logits.shape[:2], self.num_classes,
                                     dtype=torch.int64, device=src_logits.device)
         target_classes[idx] = target_classes_o
