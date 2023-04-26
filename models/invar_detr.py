@@ -140,7 +140,7 @@ class SetCriterion(nn.Module):
 
         # initialize the target classes with the no-object class
         sizes = list(src_logits.shape[:2])
-        target_classes = torch.full(sizes, self.num_classes,
+        target_classes = torch.full(sizes, self.num_classes+1,
                                     dtype=torch.int64, device=src_logits.device)
         # set the last dimension as the one-hot encodings of the non-empty classes
         #one_hot = self.convert_eq_to_idx('none')
@@ -159,6 +159,10 @@ class SetCriterion(nn.Module):
             target_classes[p[0], p[1]] = t
 
         #src_logits = src_logits.transpose(1, 2)
+        # flatten the logits
+        src_logits = src_logits.flatten(0, 1)
+        # flatten the target classes
+        target_classes = target_classes.flatten(0, 1)
         loss_ce = F.cross_entropy(src_logits, target_classes, self.empty_weight)
         losses = {'loss_ce': loss_ce}
 
@@ -348,7 +352,7 @@ def build(args):
     # you should pass `num_classes` to be 2 (max_obj_id + 1).
     # For more details on this, check the following discussion
     # https://github.com/facebookresearch/detr/issues/108#issuecomment-650269223
-    num_classes = 3 if args.dataset_file != 'coco' else 91
+    num_classes = 2 if args.dataset_file != 'coco' else 91
     if args.dataset_file == "coco_panoptic":
         # for panoptic, we just add a num_classes that is large enough to hold
         # max_obj_id + 1, but the exact value doesn't really matter
