@@ -158,6 +158,7 @@ def train_invar(model, dataloader, criterion, optimizer, device):
     print_outputs = 0
     print_weights = 0
     for i in range(iteration):
+        print("Iteration: ", i)
         for batch in dataloader:
             inputs, targets, masks = batch
             inputs = inputs.to(device)
@@ -179,5 +180,6 @@ def train_invar(model, dataloader, criterion, optimizer, device):
                 print("Found NaN at index")
                 return
             total_loss = sum(loss for loss in loss.values())
+            print("Total loss: ", total_loss.item())
             total_loss.backward()
             optimizer.step()
