@@ -175,8 +175,9 @@ def train_invar(model, dataloader, criterion, optimizer, device):
             if print_weights == 1:
                 print("weights: ", model.fc.weight)
             # stop if loss is nan
-            if torch.isnan(outputs).any():        
+            if torch.isnan(outputs['eq']).any() or torch.isnan(outputs['op']).any():        
                 print("Found NaN at index")
                 return
-            loss.backward()
+            total_loss = sum(loss for loss in loss.values())
+            total_loss.backward()
             optimizer.step()
