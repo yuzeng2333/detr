@@ -105,6 +105,10 @@ class SetCriterion(nn.Module):
         self.register_buffer('empty_weight', empty_weight)
 
     def convert_eq_to_idx(self, eq):
+        if eq == 'none':
+            one_hot = torch.zeros(len(eq_idx)+1)
+            one_hot[-1] = 1
+            return one_hot
         assert eq in eq_idx
         one_hot = torch.zeros(len(eq_idx)+1)
         one_hot[eq_idx[eq]] = 1
@@ -127,19 +131,35 @@ class SetCriterion(nn.Module):
             for j in J:
                 target_classes_o_i = t["eq"][j]
                 # convert to one-hot
-                one_hot = self.convert_eq_to_idx(target_classes_o_i)
-                target_classes_o_list.append(one_hot)
+                num_label = torch.tensor(eq_idx[target_classes_o_i])
+                target_classes_o_list.append(num_label)
         # convert the list to a tensor
         #target_classes_o_list = torch.tensor(target_classes_o_list)
         # ground truth labels for each matched object
-        target_classes_o = torch.cat(target_classes_o_list)
+        target_classes_o = torch.stack(target_classes_o_list)
 
         # initialize the target classes with the no-object class
-        target_classes = torch.full(src_logits.shape[:2], self.num_classes,
+        sizes = list(src_logits.shape[:2])
+        target_classes = torch.full(sizes, self.num_classes,
                                     dtype=torch.int64, device=src_logits.device)
-        target_classes[idx] = target_classes_o
+        # set the last dimension as the one-hot encodings of the non-empty classes
+        #one_hot = self.convert_eq_to_idx('none')
+        #target_classes[:, :, :] = one_hot
+        # transform idx: the inner dimension should be pairs from the first and the second dimension
+        # of the idx
+        pos = torch.stack(idx, dim=1)
+        #target_classes[pos, :] = target_classes_o
+        # assign target_classes_o to the corresponding positions in target_classes
+        # use zip to iterate each pos and target_classes_o
+        for p, t in zip(pos, target_classes_o):
+            # convert t to the same type as target_classes
+            t = t.type_as(target_classes)
+            # convert p to a tuple
+            p = tuple(p.tolist())
+            target_classes[p[0], p[1]] = t
 
-        loss_ce = F.cross_entropy(src_logits.transpose(1, 2), target_classes, self.empty_weight)
+        #src_logits = src_logits.transpose(1, 2)
+        loss_ce = F.cross_entropy(src_logits, target_classes, self.empty_weight)
         losses = {'loss_ce': loss_ce}
 
         if log:
@@ -328,7 +348,7 @@ def build(args):
     # you should pass `num_classes` to be 2 (max_obj_id + 1).
     # For more details on this, check the following discussion
     # https://github.com/facebookresearch/detr/issues/108#issuecomment-650269223
-    num_classes = 20 if args.dataset_file != 'coco' else 91
+    num_classes = 3 if args.dataset_file != 'coco' else 91
     if args.dataset_file == "coco_panoptic":
         # for panoptic, we just add a num_classes that is large enough to hold
         # max_obj_id + 1, but the exact value doesn't really matter
