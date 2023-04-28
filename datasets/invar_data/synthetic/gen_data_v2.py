@@ -1,5 +1,6 @@
 import random
 import sympy
+from sympy.parsing.sympy_parser import parse_expr
 
 # this file is used to generate a dataset for invariance training
 
@@ -37,6 +38,8 @@ class SingleExpr:
         self.str = ""
 
     def gen_str(self):
+        if self.str != "":
+            return
         for item in self.item_list:
             self.str += str(item.coeff) + "*"
             idx = 0
@@ -47,7 +50,7 @@ class SingleExpr:
                     all_zero = False
                     break
             if all_zero == True:
-                self.str += "0"
+                self.str += "1"
             else:
                 for degree in item.degree_list:
                     # print the expression with variable name
@@ -58,11 +61,19 @@ class SingleExpr:
                             self.str += str(degree)
                         self.str += ")*"  
                     idx += 1
-            # remove the last "*"
-            self.str = self.str[:-1]
+            # remove the last "*" if it is "*"
+            if self.str[-1] == "*":
+                self.str = self.str[:-1]
             self.str += " + "
         # remove the last " + "
-        self.str = self.str[:-3]
+        if self.str[-3:] == " + ":
+            self.str = self.str[:-3]
+
+    def print_expr(self):
+        if self.is_eq == 1:
+            print(self.str + " = " + str(self.const))
+        else:
+            print(self.str + " < " + str(self.const))
 
 expr_list = []
 for i in range(eq_num):
@@ -80,7 +91,9 @@ for i in range(eq_num):
             if var_not_included == 1:
                 degree_list.append(0)
             else:
-                degree_list.append(random.randint(0, degree))
+                single_degree = random.randint(0, degree)
+                degree_list.append(single_degree)
+                degree = degree - single_degree
         item_list.append(SingleItem(coeff, degree_list))
     const = random.randint(1, 10)
     expr_list.append(SingleExpr(is_eq, item_list, const))
@@ -88,8 +101,7 @@ for i in range(eq_num):
 # print the expression
 for expr in expr_list:
     expr.gen_str()
-    print(expr.str+"\n")
-
+    expr.print_expr()
 
 
 # declare the variables
@@ -104,14 +116,16 @@ while sol_list.__len__() < SOL_NUM:
     equations = []
     # assign a random number to x
     x_val = random.randint(-500, 500)
-    x_eq = "x = " + str(x_val)
-    equations.append(x_eq)
+    x_eq = "x + " + str(x_val)
+    x_eq_expr = parse_expr(x_eq)
+    equations.append(sympy.Eq(x_eq_expr, 0))
     # add all the equations to the list
     for expr in expr_list:
         expr_str = expr.str
         if expr.is_eq == 1:
-            expr_str += " = " + str(expr.const)
-            equations.append(expr_str)
+            expr_str += " + " + str(expr.const)
+            expr_str_expr = parse_expr(expr_str)
+            equations.append(sympy.Eq(expr_str_expr, 0))
     # solve the equations
     sol = sympy.solve(equations, dict=True)
     # check if the solutions satisfy all the inequalities
