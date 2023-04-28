@@ -7,6 +7,7 @@ MAX_DEGREE = 5
 MAX_VAR_NUM = 3
 MAX_TERM_NUM = 5
 MAX_EQ_NUM = 5
+SOL_NUM = 2
 
 random.seed(0)
 degree = random.randint(1, MAX_DEGREE)
@@ -39,20 +40,22 @@ class SingleExpr:
 
     def gen_str(self):
         for item in self.item_list:
-            self.str += str(item.coeff)
+            self.str += str(item.coeff) + "*"
             idx = 0
             for degree in item.degree_list:
                 # print the expression with variable name
                 if degree != 0:
-                    self.str += var_dict[idx]
+                    self.str += "(" + var_dict[idx]
                     if degree != 1:
                         self.str += "**"
                         self.str += str(degree)
-                    self.str += " "  
+                    self.str += ")*"  
                 idx += 1
-            self.str += "+"
-        # remove the last "+"
-        self.str = self.str[:-1]
+            # remove the last "*"
+            self.str = self.str[:-1]
+            self.str += " + "
+        # remove the last " + "
+        self.str = self.str[:-3]
 
 expr_list = []
 for i in range(eq_num):
@@ -72,7 +75,8 @@ for i in range(eq_num):
 # print the expression
 for expr in expr_list:
     expr.gen_str()
-    print(expr.str)
+    print(expr.str+"\n")
+
 
 
 # declare the variables
@@ -83,7 +87,7 @@ x, y, z = sympy.symbols("x y z")
 sol_list = []
 # solve the equations with sympy
 # try to get 512 solutions
-while sol_list.__len__() < 512:
+while sol_list.__len__() < SOL_NUM:
     equations = []
     # assign a random number to x
     x_val = random.randint(-500, 500)
