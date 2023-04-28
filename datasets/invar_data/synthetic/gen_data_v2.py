@@ -10,9 +10,7 @@ MAX_EQ_NUM = 5
 SOL_NUM = 2
 
 random.seed(0)
-degree = random.randint(1, MAX_DEGREE)
-var_num = random.randint(1, MAX_VAR_NUM)
-term_num = random.randint(1, MAX_TERM_NUM)
+
 eq_num = random.randint(1, MAX_EQ_NUM)
 
 # dict of variable name and its degree
@@ -42,15 +40,24 @@ class SingleExpr:
         for item in self.item_list:
             self.str += str(item.coeff) + "*"
             idx = 0
+            # check if degree_list has non-zero value
+            all_zero = True
             for degree in item.degree_list:
-                # print the expression with variable name
                 if degree != 0:
-                    self.str += "(" + var_dict[idx]
-                    if degree != 1:
-                        self.str += "**"
-                        self.str += str(degree)
-                    self.str += ")*"  
-                idx += 1
+                    all_zero = False
+                    break
+            if all_zero == True:
+                self.str += "0"
+            else:
+                for degree in item.degree_list:
+                    # print the expression with variable name
+                    if degree != 0:
+                        self.str += "(" + var_dict[idx]
+                        if degree != 1:
+                            self.str += "**"
+                            self.str += str(degree)
+                        self.str += ")*"  
+                    idx += 1
             # remove the last "*"
             self.str = self.str[:-1]
             self.str += " + "
@@ -59,15 +66,21 @@ class SingleExpr:
 
 expr_list = []
 for i in range(eq_num):
+    term_num = random.randint(1, MAX_TERM_NUM)
     # generate a single expression
     is_eq = random.randint(0, 1)
     item_list = []
     for j in range(term_num):
         # generate a single item
+        degree = random.randint(1, MAX_DEGREE)
         coeff = random.randint(1, 10)
         degree_list = []
-        for k in range(var_num):
-            degree_list.append(random.randint(0, degree))
+        for k in range(MAX_VAR_NUM):
+            var_not_included = random.randint(0, 1)
+            if var_not_included == 1:
+                degree_list.append(0)
+            else:
+                degree_list.append(random.randint(0, degree))
         item_list.append(SingleItem(coeff, degree_list))
     const = random.randint(1, 10)
     expr_list.append(SingleExpr(is_eq, item_list, const))

@@ -1,5 +1,5 @@
 all: 
-	python gen_data.py
+	python gen_data_v2.py
 
 dbg:
-	python -m pdb gen_data.py
+	python -m pdb gen_data_v2.py
