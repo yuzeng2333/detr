@@ -9,6 +9,8 @@ MAX_VAR_NUM = 3
 MAX_TERM_NUM = 5
 MAX_EQ_NUM = 5
 SOL_NUM = 2
+CONST_MAX = 512
+X_MAX = 512 
 
 random.seed(0)
 
@@ -75,6 +77,14 @@ class SingleExpr:
         else:
             print(self.str + " < " + str(self.const))
 
+
+def check_imaginary(sol_list):
+    for sol in sol_list:
+        for key in sol.keys():
+            if sol[key].is_real == False:
+                return True
+    return False
+
 expr_list = []
 for i in range(eq_num):
     term_num = random.randint(1, MAX_TERM_NUM)
@@ -95,14 +105,13 @@ for i in range(eq_num):
                 degree_list.append(single_degree)
                 degree = degree - single_degree
         item_list.append(SingleItem(coeff, degree_list))
-    const = random.randint(1, 10)
+    const = random.randint(1, CONST_MAX)
     expr_list.append(SingleExpr(is_eq, item_list, const))
 
 # print the expression
 for expr in expr_list:
     expr.gen_str()
     expr.print_expr()
-
 
 # declare the variables
 x, y, z = sympy.symbols("x y z")
@@ -112,10 +121,15 @@ x, y, z = sympy.symbols("x y z")
 sol_list = []
 # solve the equations with sympy
 # try to get 512 solutions
+run_num = 0
 while sol_list.__len__() < SOL_NUM:
+    run_num += 1
+    print("run number: " + str(run_num))
+    if run_num > 1000:
+        break
     equations = []
     # assign a random number to x
-    x_val = random.randint(-500, 500)
+    x_val = random.randint(-1*X_MAX, X_MAX)
     x_eq = "x + " + str(x_val)
     x_eq_expr = parse_expr(x_eq)
     equations.append(sympy.Eq(x_eq_expr, 0))
@@ -123,11 +137,17 @@ while sol_list.__len__() < SOL_NUM:
     for expr in expr_list:
         expr_str = expr.str
         if expr.is_eq == 1:
-            expr_str += " + " + str(expr.const)
+            expr_str += " - " + str(expr.const)
             expr_str_expr = parse_expr(expr_str)
             equations.append(sympy.Eq(expr_str_expr, 0))
     # solve the equations
     sol = sympy.solve(equations, dict=True)
+    # skip the sol if it is empty
+    if sol.__len__() == 0:
+        continue
+    # if the solution has imaginary number, skip it
+    if check_imaginary(sol) == True:
+        continue
     # check if the solutions satisfy all the inequalities
     all_pass = True
     for expr in expr_list:
@@ -141,6 +161,9 @@ while sol_list.__len__() < SOL_NUM:
                 break
     if all_pass == True:
         # append the solution to the list
+        sol_num = sol_list.__len__()
+        print("solution found: " + str(sol_num))
+        print(sol)
         sol_list.append(sol)
 
 

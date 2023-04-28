@@ -105,5 +105,6 @@ def build(image_set, args):
 
     data_folder, label_folder = PATHS[image_set]
     # currently only load the data for ps2
-    dataset = InvarianceDateSet(data_folder, label_folder, ["ps2", "ps3"])
+    file_names = ["ps2", "ps3", "ps4_1", "ps5_1", "ps6_1", "sqrt1_1"]
+    dataset = InvarianceDateSet(data_folder, label_folder, file_names)
     return dataset
