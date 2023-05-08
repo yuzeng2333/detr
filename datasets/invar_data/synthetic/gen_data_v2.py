@@ -133,7 +133,7 @@ x, y, z = sympy.symbols("x y z")
 
 w_list = []
 for i in range(expr_num):
-    w_list.append(symbols('w{}'.format(i)))
+    w_list.append(sympy.symbols('w{}'.format(i)))
 
 
  # instead of solve the equation for solutions,
