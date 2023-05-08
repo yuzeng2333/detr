@@ -7,15 +7,15 @@ from sympy.parsing.sympy_parser import parse_expr
 MAX_DEGREE = 2
 MAX_VAR_NUM = 3
 MAX_TERM_NUM = 5
-MAX_EQ_NUM = 5
+MAX_EXPR_NUM = 2
 SOL_NUM = 512
 CONST_MAX = 512
 X_MAX = 512 
 MIN_SOL_NUM = 100
+ENABLE_INEQ = False
 
 #random.seed(0)
-
-eq_num = random.randint(1, MAX_EQ_NUM)
+expr_num = random.randint(1, MAX_EXPR_NUM)
 
 # dict of variable name and its degree
 var_dict = {
@@ -86,54 +86,66 @@ def check_imaginary(sol_list):
                 return True
     return False
 
+
+def get_expr_list():
+    expr_list = []
+    for i in range(expr_num):
+        # generate a single expression
+        if ENABLE_INEQ == True:
+            is_eq = random.randint(0, 1)
+        else:
+            is_eq = 1
+        term_num = random.randint(1, MAX_TERM_NUM)
+        item_list = []
+        for j in range(term_num):
+            # generate a single item
+            # determine the degree of the item
+            degree = random.randint(1, MAX_DEGREE)
+            coeff = random.randint(1, 10)
+            degree_list = []
+            # determine the variables in this item and their degrees
+            for k in range(MAX_VAR_NUM):
+                var_not_included = random.randint(0, 1)
+                if var_not_included == 1:
+                    degree_list.append(0)
+                else:
+                    single_degree = random.randint(0, degree)
+                    degree_list.append(single_degree)
+                    degree = degree - single_degree
+            item_list.append(SingleItem(coeff, degree_list))
+        # with 50% chance, the const is 0
+        const = 0
+        if random.randint(0, 1) == 1:
+            const = random.randint(0, CONST_MAX)
+        expr_list.append(SingleExpr(is_eq, item_list, const))
+
+    # print the expression
+    for expr in expr_list:
+        expr.gen_str()
+        expr.print_expr()
+    return expr_list
+
+
 # the program begins here
 
-expr_list = []
-for i in range(eq_num):
-    term_num = random.randint(1, MAX_TERM_NUM)
-    # generate a single expression
-    is_eq = random.randint(0, 1)
-    item_list = []
-    for j in range(term_num):
-        # generate a single item
-        # determine the degree of the item
-        degree = random.randint(1, MAX_DEGREE)
-        coeff = random.randint(1, 10)
-        degree_list = []
-        # determine the variables in this item and their degrees
-        for k in range(MAX_VAR_NUM):
-            var_not_included = random.randint(0, 1)
-            if var_not_included == 1:
-                degree_list.append(0)
-            else:
-                single_degree = random.randint(0, degree)
-                degree_list.append(single_degree)
-                degree = degree - single_degree
-        item_list.append(SingleItem(coeff, degree_list))
-    # with 50% chance, the const is 0
-    const = 0
-    if random.randint(0, 1) == 1:
-        const = random.randint(0, CONST_MAX)
-    expr_list.append(SingleExpr(is_eq, item_list, const))
-
-# print the expression
-for expr in expr_list:
-    expr.gen_str()
-    expr.print_expr()
-
 # declare the variables
-x, y, z, w = sympy.symbols("x y z w")
+x, y, z = sympy.symbols("x y z")
+
+w_list = []
+for i in range(expr_num):
+    w_list.append(symbols('w{}'.format(i)))
+
 
  # instead of solve the equation for solutions,
  # we do in this way:
     # 1. w is always on the rhs of the equaltion
     # 2. we assign random numbers to x, y, z
 
-
 data_point_num = 0
 # 16 is the number of data points (a set of equations and inequalities)
 #  we want to generate
 while data_point_num < 16: 
+    expr_list = get_expr_list()
     # find up to SOL_NUM solutions to the equations
     sol_list = []
     # solve the equations with sympy
@@ -168,12 +180,14 @@ while data_point_num < 16:
         equations.append(sympy.Eq(z_eq_expr, 0))
 
         # add all the equations to the list
+        assert expr_list.__len__() == expr_num
+        i = 0
         for expr in expr_list:
             expr_str = expr.str
             if expr.is_eq == 1:
                 expr_str += " - " + str(expr.const)
                 expr_str_expr = parse_expr(expr_str)
-                equations.append(sympy.Eq(expr_str_expr, w))
+                equations.append(sympy.Eq(expr_str_expr, w_list[i]))
         # solve the equations
         sol = sympy.solve(equations, dict=True)
         # skip the sol if it is empty
