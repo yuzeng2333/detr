@@ -4,15 +4,16 @@ from sympy.parsing.sympy_parser import parse_expr
 
 # this file is used to generate a dataset for invariance training
 
-MAX_DEGREE = 5
+MAX_DEGREE = 2
 MAX_VAR_NUM = 3
 MAX_TERM_NUM = 5
 MAX_EQ_NUM = 5
-SOL_NUM = 2
+SOL_NUM = 512
 CONST_MAX = 512
 X_MAX = 512 
+MIN_SOL_NUM = 100
 
-random.seed(0)
+#random.seed(0)
 
 eq_num = random.randint(1, MAX_EQ_NUM)
 
@@ -85,6 +86,8 @@ def check_imaginary(sol_list):
                 return True
     return False
 
+# the program begins here
+
 expr_list = []
 for i in range(eq_num):
     term_num = random.randint(1, MAX_TERM_NUM)
@@ -93,9 +96,11 @@ for i in range(eq_num):
     item_list = []
     for j in range(term_num):
         # generate a single item
+        # determine the degree of the item
         degree = random.randint(1, MAX_DEGREE)
         coeff = random.randint(1, 10)
         degree_list = []
+        # determine the variables in this item and their degrees
         for k in range(MAX_VAR_NUM):
             var_not_included = random.randint(0, 1)
             if var_not_included == 1:
@@ -105,7 +110,10 @@ for i in range(eq_num):
                 degree_list.append(single_degree)
                 degree = degree - single_degree
         item_list.append(SingleItem(coeff, degree_list))
-    const = random.randint(1, CONST_MAX)
+    # with 50% chance, the const is 0
+    const = 0
+    if random.randint(0, 1) == 1:
+        const = random.randint(0, CONST_MAX)
     expr_list.append(SingleExpr(is_eq, item_list, const))
 
 # print the expression
@@ -114,56 +122,97 @@ for expr in expr_list:
     expr.print_expr()
 
 # declare the variables
-x, y, z = sympy.symbols("x y z")
+x, y, z, w = sympy.symbols("x y z w")
 
-# find 512 solutions to the equations
-# the solutions are stored in a tensor of shape [512, var_num]
-sol_list = []
-# solve the equations with sympy
-# try to get 512 solutions
-run_num = 0
-while sol_list.__len__() < SOL_NUM:
-    run_num += 1
-    print("run number: " + str(run_num))
-    if run_num > 1000:
-        break
-    equations = []
-    # assign a random number to x
-    x_val = random.randint(-1*X_MAX, X_MAX)
-    x_eq = "x + " + str(x_val)
-    x_eq_expr = parse_expr(x_eq)
-    equations.append(sympy.Eq(x_eq_expr, 0))
-    # add all the equations to the list
-    for expr in expr_list:
-        expr_str = expr.str
-        if expr.is_eq == 1:
-            expr_str += " - " + str(expr.const)
-            expr_str_expr = parse_expr(expr_str)
-            equations.append(sympy.Eq(expr_str_expr, 0))
-    # solve the equations
-    sol = sympy.solve(equations, dict=True)
-    # skip the sol if it is empty
-    if sol.__len__() == 0:
-        continue
-    # if the solution has imaginary number, skip it
-    if check_imaginary(sol) == True:
-        continue
-    # check if the solutions satisfy all the inequalities
-    all_pass = True
-    for expr in expr_list:
-        if expr.is_eq == 0:
+ # instead of solve the equation for solutions,
+ # we do in this way:
+    # 1. w is always on the rhs of the equaltion
+    # 2. we assign random numbers to x, y, z
+
+
+data_point_num = 0
+# 16 is the number of data points (a set of equations and inequalities)
+#  we want to generate
+while data_point_num < 16: 
+    # find up to SOL_NUM solutions to the equations
+    sol_list = []
+    # solve the equations with sympy
+    # try to get 512 solutions
+    run_num = 0
+    while sol_list.__len__() < SOL_NUM:
+        run_num += 1
+        print("run number: " + str(run_num))
+        if run_num > 1000:
+            break
+        equations = []
+        max_xyz = 0
+        # assign a random number to x
+        x_val = random.randint(-1*X_MAX, X_MAX)
+        max_xyz = max(max_xyz, x_val)
+        x_eq = "x + " + str(x_val)
+        x_eq_expr = parse_expr(x_eq)
+        equations.append(sympy.Eq(x_eq_expr, 0))
+
+        # assign a random number to y
+        y_val = random.randint(-1*X_MAX, X_MAX)
+        max_xyz = max(max_xyz, y_val)
+        y_eq = "y + " + str(y_val)
+        y_eq_expr = parse_expr(y_eq)
+        equations.append(sympy.Eq(y_eq_expr, 0))
+
+        # assign a random number to z
+        z_val = random.randint(-1*X_MAX, X_MAX)
+        max_xyz = max(max_xyz, z_val)
+        z_eq = "z + " + str(z_val)
+        z_eq_expr = parse_expr(z_eq)
+        equations.append(sympy.Eq(z_eq_expr, 0))
+
+        # add all the equations to the list
+        for expr in expr_list:
             expr_str = expr.str
-            expr_str += " < " + str(expr.const)
-            # evaluate the expression
-            expr_val = eval(expr_str)
-            if expr_val == False:
-                all_pass = False
-                break
-    if all_pass == True:
-        # append the solution to the list
-        sol_num = sol_list.__len__()
-        print("solution found: " + str(sol_num))
-        print(sol)
-        sol_list.append(sol)
+            if expr.is_eq == 1:
+                expr_str += " - " + str(expr.const)
+                expr_str_expr = parse_expr(expr_str)
+                equations.append(sympy.Eq(expr_str_expr, w))
+        # solve the equations
+        sol = sympy.solve(equations, dict=True)
+        # skip the sol if it is empty
+        if sol.__len__() == 0:
+            continue
+        # if the solution has imaginary number, skip it
+        if check_imaginary(sol) == True:
+            continue
+        # if the value of w is one order of magnitude larger than x, y, z,
+        # skip the solution
+        if sol[0][w] > 10*max_xyz:
+            continue
+        # check if the solutions satisfy all the inequalities
+        all_pass = True
+        for expr in expr_list:
+            if expr.is_eq == 0:
+                expr_str = expr.str
+                expr_str += " < " + str(expr.const)
+                # evaluate the expression
+                expr_val = eval(expr_str)
+                if expr_val == False:
+                    all_pass = False
+                    break
+        if all_pass == True:
+            # append the solution to the list
+            sol_num = sol_list.__len__()
+            print("solution found: " + str(sol_num))
+            print(sol)
+            sol_list.append(sol)
 
-
+    # if solution number > MIN_SOL_NUM, store the solutions and the equations
+    if sol_list.__len__() >= MIN_SOL_NUM:
+        # store the equations
+        with open("equations.txt", "w") as f:
+            for expr in expr_list:
+                f.write(expr.str + "\n")
+        # store the solutions
+        with open("solutions.txt", "w") as f:
+            for sol in sol_list:
+                f.write(str(sol) + "\n")
+        data_point_num += 1
+        print("data point number: " + str(data_point_num))
