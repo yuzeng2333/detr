@@ -159,21 +159,21 @@ while data_point_num < 16:
         equations = []
         max_xyz = 0
         # assign a random number to x
-        x_val = random.randint(-1*X_MAX, X_MAX)
+        x_val = random.gauss(0, X_MAX/3)
         max_xyz = max(max_xyz, x_val)
         x_eq = "x + " + str(x_val)
         x_eq_expr = parse_expr(x_eq)
         equations.append(sympy.Eq(x_eq_expr, 0))
 
         # assign a random number to y
-        y_val = random.randint(-1*X_MAX, X_MAX)
+        y_val = random.gauss(0, X_MAX/3)
         max_xyz = max(max_xyz, y_val)
         y_eq = "y + " + str(y_val)
         y_eq_expr = parse_expr(y_eq)
         equations.append(sympy.Eq(y_eq_expr, 0))
 
         # assign a random number to z
-        z_val = random.randint(-1*X_MAX, X_MAX)
+        z_val = random.gauss(0, X_MAX/3)
         max_xyz = max(max_xyz, z_val)
         z_eq = "z + " + str(z_val)
         z_eq_expr = parse_expr(z_eq)
@@ -181,24 +181,35 @@ while data_point_num < 16:
 
         # add all the equations to the list
         assert expr_list.__len__() == expr_num
-        i = 0
-        for expr in expr_list:
+        for idx, expr in enumerate(expr_list):
             expr_str = expr.str
             if expr.is_eq == 1:
                 expr_str += " - " + str(expr.const)
                 expr_str_expr = parse_expr(expr_str)
-                equations.append(sympy.Eq(expr_str_expr, w_list[i]))
+                equations.append(sympy.Eq(expr_str_expr, w_list[idx]))
+        # print all the equations
+        for eq in equations:
+            print(eq)
         # solve the equations
         sol = sympy.solve(equations, dict=True)
         # skip the sol if it is empty
         if sol.__len__() == 0:
-            continue
+            print("empty solution")
+            break
         # if the solution has imaginary number, skip it
         if check_imaginary(sol) == True:
+            print ("imaginary number")
             continue
-        # if the value of w is one order of magnitude larger than x, y, z,
+        # if the value of any w in w_list is one order of magnitude larger than x, y, z,
         # skip the solution
-        if sol[0][w] > 10*max_xyz:
+        all_w = True
+        for key in sol[0].keys():
+            if key[0] == "w":
+                if sol[0][key] > max_xyz*10:
+                    all_w = False
+                    break
+        if all_w == False:
+            print("w is too large")
             continue
         # check if the solutions satisfy all the inequalities
         all_pass = True
