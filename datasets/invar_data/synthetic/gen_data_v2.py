@@ -1,5 +1,6 @@
 import random
 import sympy
+import os
 from sympy.parsing.sympy_parser import parse_expr
 
 # this file is used to generate a dataset for invariance training
@@ -8,14 +9,18 @@ MAX_DEGREE = 2
 MAX_VAR_NUM = 3
 MAX_TERM_NUM = 5
 MAX_EXPR_NUM = 2
-SOL_NUM = 512
+#SOL_NUM = 512
+SOL_NUM = 4
 CONST_MAX = 512
 X_MAX = 32 
-MIN_SOL_NUM = 100
+#MIN_SOL_NUM = 100
+MIN_SOL_NUM = 3
 ENABLE_INEQ = False
 
 #random.seed(0)
 expr_num = random.randint(1, MAX_EXPR_NUM)
+
+assert SOL_NUM >= MIN_SOL_NUM
 
 # dict of variable name and its degree
 var_dict = {
@@ -267,8 +272,15 @@ while data_point_num < 16:
             f.write("idx: " + str(data_point_idx) + "\n")
         # store the solutions
         with open("solutions.txt", "a") as f:
+            # if the file is empty, write the variables from the sol in the first line
+            if os.stat("solutions.txt").st_size == 0:
+                for key in sol_list[0][0].keys():
+                    f.write(str(key) + " ")
+                f.write("\n")
             for sol in sol_list:
-                f.write(str(sol) + "\n")
+                for key in sol[0].keys():
+                    f.write(str(sol[0][key]) + " ")
+                f.write("\n")
             f.write("\n")
             f.write("idx: " + str(data_point_idx) + "\n")
         # store the poly lables to the file
