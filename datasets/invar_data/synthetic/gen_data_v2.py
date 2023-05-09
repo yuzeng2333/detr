@@ -10,7 +10,7 @@ MAX_TERM_NUM = 5
 MAX_EXPR_NUM = 2
 SOL_NUM = 512
 CONST_MAX = 512
-X_MAX = 512 
+X_MAX = 32 
 MIN_SOL_NUM = 100
 ENABLE_INEQ = False
 
@@ -159,21 +159,21 @@ while data_point_num < 16:
         equations = []
         max_xyz = 0
         # assign a random number to x
-        x_val = random.gauss(0, X_MAX/3)
+        x_val = int(random.gauss(0, X_MAX/3))
         max_xyz = max(max_xyz, x_val)
         x_eq = "x + " + str(x_val)
         x_eq_expr = parse_expr(x_eq)
         equations.append(sympy.Eq(x_eq_expr, 0))
 
         # assign a random number to y
-        y_val = random.gauss(0, X_MAX/3)
+        y_val = int(random.gauss(0, X_MAX/3))
         max_xyz = max(max_xyz, y_val)
         y_eq = "y + " + str(y_val)
         y_eq_expr = parse_expr(y_eq)
         equations.append(sympy.Eq(y_eq_expr, 0))
 
         # assign a random number to z
-        z_val = random.gauss(0, X_MAX/3)
+        z_val = int(random.gauss(0, X_MAX/3))
         max_xyz = max(max_xyz, z_val)
         z_eq = "z + " + str(z_val)
         z_eq_expr = parse_expr(z_eq)
@@ -202,15 +202,15 @@ while data_point_num < 16:
             continue
         # if the value of any w in w_list is one order of magnitude larger than x, y, z,
         # skip the solution
-        all_w = True
-        for key in sol[0].keys():
-            if key[0] == "w":
-                if sol[0][key] > max_xyz*10:
-                    all_w = False
-                    break
-        if all_w == False:
-            print("w is too large")
-            continue
+        #all_w = True
+        #for key in sol[0].keys():
+        #    if key[0] == "w":
+        #        if sol[0][key] > max_xyz*100:
+        #            all_w = False
+        #            break
+        #if all_w == False:
+        #    print("w is too large")
+        #    continue
         # check if the solutions satisfy all the inequalities
         all_pass = True
         for expr in expr_list:
@@ -222,6 +222,7 @@ while data_point_num < 16:
                 if expr_val == False:
                     all_pass = False
                     break
+        # print the sol
         if all_pass == True:
             # append the solution to the list
             sol_num = sol_list.__len__()
@@ -232,11 +233,11 @@ while data_point_num < 16:
     # if solution number > MIN_SOL_NUM, store the solutions and the equations
     if sol_list.__len__() >= MIN_SOL_NUM:
         # store the equations
-        with open("equations.txt", "w") as f:
+        with open("equations.txt", "a") as f:
             for expr in expr_list:
                 f.write(expr.str + "\n")
         # store the solutions
-        with open("solutions.txt", "w") as f:
+        with open("solutions.txt", "a") as f:
             for sol in sol_list:
                 f.write(str(sol) + "\n")
         data_point_num += 1
