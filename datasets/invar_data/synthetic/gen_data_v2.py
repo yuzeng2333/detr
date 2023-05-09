@@ -312,8 +312,7 @@ while data_point_num < EXPERIMENT_TO_RUN:
             num_expr = expr_list.__len__()
             # print "eq" of the quantity of num_expr
             eq_str = "\"eq\", " * num_expr
-            eq_str.rstrip()
-            eq_str.rstrip()
+            eq_str = eq_str[:-2]
             f.write("{\n")
             f.write("  \"eq\": [" + eq_str +"],\n")
             f.write("  \"op\": [\n")
@@ -334,9 +333,12 @@ while data_point_num < EXPERIMENT_TO_RUN:
                 # write the poly to the file
                 f.write("    [")
                 for idx, poly_label in enumerate(poly):
+                    to_print = ""
                     if idx == poly.__len__() - 1:
-                        f.write("\"" + str(poly_label) + "\"")
-                    f.write("\"" + str(poly_label) + "\", ")
+                        to_print = "\"" + str(poly_label) + "\""
+                    else:
+                        to_print = "\"" + str(poly_label) + "\", "
+                    f.write(to_print)
                 f.write("],\n")
             f.write("  ]\n")
             f.write("},\n")
