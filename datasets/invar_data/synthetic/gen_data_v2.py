@@ -5,17 +5,24 @@ from sympy.parsing.sympy_parser import parse_expr
 
 # this file is used to generate a dataset for invariance training
 
+RUN_REAL = False
+
 MAX_DEGREE = 2
 MAX_VAR_NUM = 3
 MAX_TERM_NUM = 5
 MAX_EXPR_NUM = 2
-#SOL_NUM = 512
-SOL_NUM = 4
+if RUN_REAL:
+    SOL_NUM = 512
+else:
+    SOL_NUM = 4
 CONST_MAX = 512
 X_MAX = 32 
-#MIN_SOL_NUM = 100
-MIN_SOL_NUM = 3
+if RUN_REAL:
+    MIN_SOL_NUM = 100
+else:
+    MIN_SOL_NUM = 3
 ENABLE_INEQ = False
+EXPERIMENT_TO_RUN = 32
 
 #random.seed(0)
 expr_num = random.randint(1, MAX_EXPR_NUM)
@@ -174,7 +181,7 @@ data_point_idx = 0
 MAX_DIGIT_WIDTH = 5
 # 16 is the number of data points (a set of equations and inequalities)
 #  we want to generate
-while data_point_num < 16: 
+while data_point_num < EXPERIMENT_TO_RUN: 
     expr_list = get_expr_list()
     # find up to SOL_NUM solutions to the equations
     sol_list = []
@@ -302,9 +309,19 @@ while data_point_num < 16:
             f.write("idx: " + str(data_point_idx) + "\n")
         # store the poly lables to the file
         with open("poly_labels.txt", "a") as f:
+            num_expr = expr_list.__len__()
+            # print "eq" of the quantity of num_expr
+            eq_str = "\"eq\", " * num_expr
+            eq_str.rstrip()
+            eq_str.rstrip()
+            f.write("{\n")
+            f.write("  \"eq\": [" + eq_str +"],\n")
+            f.write("  \"op\": [\n")
             for expr in expr_list:
                 # declare a set {}
                 poly = set()
+                # always add x since we use w on the RHS
+                poly.add("x")
                 # iterate through each item in the expr
                 for item in expr.item_list:
                     # get its degree_list
@@ -315,7 +332,14 @@ while data_point_num < 16:
                     # add the poly_label to the set
                     poly.add(poly_label)
                 # write the poly to the file
-                f.write(str(poly) + "\n")
+                f.write("    [")
+                for idx, poly_label in enumerate(poly):
+                    if idx == poly.__len__() - 1:
+                        f.write("\"" + str(poly_label) + "\"")
+                    f.write("\"" + str(poly_label) + "\", ")
+                f.write("],\n")
+            f.write("  ]\n")
+            f.write("},\n")
             f.write("\n")
             f.write("idx: " + str(data_point_idx) + "\n")
         data_point_num += 1
