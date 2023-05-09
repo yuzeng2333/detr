@@ -126,8 +126,19 @@ def get_expr_list():
     return expr_list
 
 
-# the program begins here
+# return the poly label for the degree
+def get_poly_label(degree):
+    if degree == 0:
+        return "1"
+    elif degree == 1:
+        return "x"
+    elif degree == 2:
+        return "x2"
+    else:
+        # raise an exception
+        raise Exception("degree is not supported")
 
+# the program begins here
 # declare the variables
 x, y, z = sympy.symbols("x y z")
 
@@ -142,6 +153,7 @@ for i in range(expr_num):
     # 2. we assign random numbers to x, y, z
 
 data_point_num = 0
+data_point_idx = 0
 # 16 is the number of data points (a set of equations and inequalities)
 #  we want to generate
 while data_point_num < 16: 
@@ -233,12 +245,49 @@ while data_point_num < 16:
     # if solution number > MIN_SOL_NUM, store the solutions and the equations
     if sol_list.__len__() >= MIN_SOL_NUM:
         # store the equations
-        with open("equations.txt", "a") as f:
+        with open("equations.txt", "a+") as f:
+            # check if the file is empty or does not exist
+            if os.stat("equations.txt").st_size == 0:
+                data_point_idx = 0
+            else:
+                # read the last line of the file, put it to variable last_line
+                f.seek(0, os.SEEK_END)
+                f.seek(f.tell() - 1, os.SEEK_SET)
+                while f.read(1) != "\n":
+                    f.seek(f.tell() - 2, os.SEEK_SET)
+                last_line = f.readline()
+                # last_line should be of the format: "idx: 0"
+                # get the idx
+                last_line = last_line.split(":")
+                data_point_idx = int(last_line[1])
             for expr in expr_list:
                 f.write(expr.str + "\n")
+            f.write("\n")
+            data_point_idx += 1
+            f.write("idx: " + str(data_point_idx) + "\n")
         # store the solutions
         with open("solutions.txt", "a") as f:
             for sol in sol_list:
                 f.write(str(sol) + "\n")
+            f.write("\n")
+            f.write("idx: " + str(data_point_idx) + "\n")
+        # store the poly lables to the file
+        with open("poly_labels.txt", "a") as f:
+            for expr in expr_list:
+                # declare a set {}
+                poly = set()
+                # iterate through each item in the expr
+                for item in expr.items:
+                    # get its degree_list
+                    degree_list = item.degree_list
+                    # sum up the degree_list
+                    degree_sum = sum(degree_list)
+                    poly_label = get_poly_label(degree_sum)
+                    # add the poly_label to the set
+                    poly.add(poly_label)
+                # write the poly to the file
+                f.write(str(poly) + "\n")
+            f.write("\n")
+            f.write("idx: " + str(data_point_idx) + "\n")
         data_point_num += 1
         print("data point number: " + str(data_point_num))
