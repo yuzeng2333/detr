@@ -152,6 +152,18 @@ for i in range(expr_num):
     w_list.append(sympy.symbols('w{}'.format(i)))
 
 
+# before run, check if the file exists: equations.txt solutions.txt poly_labels.txt
+# if only some of them exist, delete them and regenerate them
+all_exist = True
+if os.path.exists("poly_labels.txt") == False:
+    all_exist = False
+if os.path.exists("solutions.txt") == True and all_exist == False:
+    os.remove("solutions.txt")
+    all_exist = False
+if os.path.exists("equations.txt") == True and all_exist == False:
+    os.remove("equations.txt")
+    all_exist = False
+
  # instead of solve the equation for solutions,
  # we do in this way:
     # 1. w is always on the rhs of the equaltion
@@ -159,6 +171,7 @@ for i in range(expr_num):
 
 data_point_num = 0
 data_point_idx = 0
+MAX_DIGIT_WIDTH = 5
 # 16 is the number of data points (a set of equations and inequalities)
 #  we want to generate
 while data_point_num < 16: 
@@ -255,16 +268,19 @@ while data_point_num < 16:
             if os.stat("equations.txt").st_size == 0:
                 data_point_idx = 0
             else:
-                # read the last line of the file, put it to variable last_line
-                f.seek(0, os.SEEK_END)
-                f.seek(f.tell() - 1, os.SEEK_SET)
-                while f.read(1) != "\n":
-                    f.seek(f.tell() - 2, os.SEEK_SET)
-                last_line = f.readline()
-                # last_line should be of the format: "idx: 0"
-                # get the idx
-                last_line = last_line.split(":")
-                data_point_idx = int(last_line[1])
+                # Move the file pointer to the end of the file
+                f.seek(0, 2)  # 2 means seek to the end of the file
+
+                # Find the start of the number
+                pos = f.tell()
+                while pos > 0:
+                    pos -= 1
+                    f.seek(pos, 0)  # 0 means seek relative to the start of the file
+                    if f.read(1) == ' ':
+                        break
+
+                # Read the number and convert it to an integer
+                data_point_idx = int(f.readline().rstrip())
             for expr in expr_list:
                 f.write(expr.str + "\n")
             f.write("\n")
@@ -273,13 +289,14 @@ while data_point_num < 16:
         # store the solutions
         with open("solutions.txt", "a") as f:
             # if the file is empty, write the variables from the sol in the first line
-            if os.stat("solutions.txt").st_size == 0:
-                for key in sol_list[0][0].keys():
-                    f.write(str(key) + " ")
-                f.write("\n")
+            for key in sol_list[0][0].keys():
+                num_spaces = MAX_DIGIT_WIDTH - len(str(key))
+                f.write(" " * num_spaces + str(key))
+            f.write("\n")
             for sol in sol_list:
                 for key in sol[0].keys():
-                    f.write(str(sol[0][key]) + " ")
+                    num_spaces = MAX_DIGIT_WIDTH - len(str(sol[0][key]))
+                    f.write(" " * num_spaces + str(sol[0][key]))
                 f.write("\n")
             f.write("\n")
             f.write("idx: " + str(data_point_idx) + "\n")
@@ -289,7 +306,7 @@ while data_point_num < 16:
                 # declare a set {}
                 poly = set()
                 # iterate through each item in the expr
-                for item in expr.items:
+                for item in expr.item_list:
                     # get its degree_list
                     degree_list = item.degree_list
                     # sum up the degree_list
