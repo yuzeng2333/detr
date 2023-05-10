@@ -6,6 +6,7 @@ from sympy.parsing.sympy_parser import parse_expr
 # this file is used to generate a dataset for invariance training
 
 RUN_REAL = False
+PRINT_SEPARATELY = True
 
 MAX_DEGREE = 2
 MAX_VAR_NUM = 3
@@ -150,6 +151,154 @@ def get_poly_label(degree):
         # raise an exception
         raise Exception("degree is not supported")
 
+
+def print_result_to_single_file(expr_list, sol_list, data_point_idx):
+    if sol_list.__len__() >= MIN_SOL_NUM:
+        # store the equations
+        with open("equations.txt", "a+") as f:
+            # check if the file is empty or does not exist
+            if os.stat("equations.txt").st_size == 0:
+                data_point_idx = 0
+            else:
+                # Move the file pointer to the end of the file
+                f.seek(0, 2)  # 2 means seek to the end of the file
+
+                # Find the start of the number
+                pos = f.tell()
+                while pos > 0:
+                    pos -= 1
+                    f.seek(pos, 0)  # 0 means seek relative to the start of the file
+                    if f.read(1) == ' ':
+                        break
+
+                # Read the number and convert it to an integer
+                data_point_idx = int(f.readline().rstrip())
+            for expr in expr_list:
+                f.write(expr.str + "\n")
+            f.write("\n")
+            data_point_idx += 1
+            f.write("idx: " + str(data_point_idx) + "\n")
+        # store the solutions
+        with open("solutions.txt", "a") as f:
+            # if the file is empty, write the variables from the sol in the first line
+            for key in sol_list[0][0].keys():
+                num_spaces = MAX_DIGIT_WIDTH - len(str(key))
+                f.write(" " * num_spaces + str(key))
+            f.write("\n")
+            for sol in sol_list:
+                for key in sol[0].keys():
+                    num_spaces = MAX_DIGIT_WIDTH - len(str(sol[0][key]))
+                    f.write(" " * num_spaces + str(sol[0][key]))
+                f.write("\n")
+            f.write("\n")
+            f.write("idx: " + str(data_point_idx) + "\n")
+        # store the poly lables to the file
+        with open("poly_labels.txt", "a") as f:
+            num_expr = expr_list.__len__()
+            # print "eq" of the quantity of num_expr
+            eq_str = "\"eq\", " * num_expr
+            eq_str = eq_str[:-2]
+            f.write("{\n")
+            f.write("  \"eq\": [" + eq_str +"],\n")
+            f.write("  \"op\": [\n")
+            for expr in expr_list:
+                # declare a set {}
+                poly = set()
+                # always add x since we use w on the RHS
+                poly.add("x")
+                # iterate through each item in the expr
+                for item in expr.item_list:
+                    # get its degree_list
+                    degree_list = item.degree_list
+                    # sum up the degree_list
+                    degree_sum = sum(degree_list)
+                    poly_label = get_poly_label(degree_sum)
+                    # add the poly_label to the set
+                    poly.add(poly_label)
+                # write the poly to the file
+                f.write("    [")
+                for idx, poly_label in enumerate(poly):
+                    to_print = ""
+                    if idx == poly.__len__() - 1:
+                        to_print = "\"" + str(poly_label) + "\""
+                    else:
+                        to_print = "\"" + str(poly_label) + "\", "
+                    f.write(to_print)
+                f.write("],\n")
+            f.write("  ]\n")
+            f.write("},\n")
+            f.write("\n")
+            f.write("idx: " + str(data_point_idx) + "\n")
+        return data_point_idx
+    else:
+        return -1
+
+
+def print_result_to_separate_file(expr_list, sol_list, data_point_idx):
+    # count how many files there are in the directory of equations
+    path = "./equations/"
+    num_files = len([f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))])
+    if num_files >= data_point_idx:
+        data_point_idx = num_files
+
+    file_name = str(data_point_idx) + ".txt"
+    if sol_list.__len__() >= MIN_SOL_NUM:
+        # store the equations
+        with open("./equations/"+file_name, "w") as f:
+            for expr in expr_list:
+                f.write(expr.str + "\n")
+            data_point_idx += 1
+        # store the solutions
+        with open("./data/"+file_name, "w") as f:
+            # if the file is empty, write the variables from the sol in the first line
+            for key in sol_list[0][0].keys():
+                num_spaces = MAX_DIGIT_WIDTH - len(str(key))
+                f.write(" " * num_spaces + str(key))
+            f.write("\n")
+            for sol in sol_list:
+                for key in sol[0].keys():
+                    num_spaces = MAX_DIGIT_WIDTH - len(str(sol[0][key]))
+                    f.write(" " * num_spaces + str(sol[0][key]))
+                f.write("\n")
+        # store the poly lables to the file
+        with open("./label/"+file_name, "w") as f:
+            num_expr = expr_list.__len__()
+            # print "eq" of the quantity of num_expr
+            eq_str = "\"eq\", " * num_expr
+            eq_str = eq_str[:-2]
+            f.write("{\n")
+            f.write("  \"eq\": [" + eq_str +"],\n")
+            f.write("  \"op\": [\n")
+            for expr in expr_list:
+                # declare a set {}
+                poly = set()
+                # always add x since we use w on the RHS
+                poly.add("x")
+                # iterate through each item in the expr
+                for item in expr.item_list:
+                    # get its degree_list
+                    degree_list = item.degree_list
+                    # sum up the degree_list
+                    degree_sum = sum(degree_list)
+                    poly_label = get_poly_label(degree_sum)
+                    # add the poly_label to the set
+                    poly.add(poly_label)
+                # write the poly to the file
+                f.write("    [")
+                for idx, poly_label in enumerate(poly):
+                    to_print = ""
+                    if idx == poly.__len__() - 1:
+                        to_print = "\"" + str(poly_label) + "\""
+                    else:
+                        to_print = "\"" + str(poly_label) + "\", "
+                    f.write(to_print)
+                f.write("],\n")
+            f.write("  ]\n")
+            f.write("},\n")
+        return data_point_idx
+    else:
+        return -1
+
 # the program begins here
 # declare the variables
 x, y, z = sympy.symbols("x y z")
@@ -267,82 +416,10 @@ while data_point_num < EXPERIMENT_TO_RUN:
             print(sol)
             sol_list.append(sol)
 
-    # if solution number > MIN_SOL_NUM, store the solutions and the equations
-    if sol_list.__len__() >= MIN_SOL_NUM:
-        # store the equations
-        with open("equations.txt", "a+") as f:
-            # check if the file is empty or does not exist
-            if os.stat("equations.txt").st_size == 0:
-                data_point_idx = 0
-            else:
-                # Move the file pointer to the end of the file
-                f.seek(0, 2)  # 2 means seek to the end of the file
-
-                # Find the start of the number
-                pos = f.tell()
-                while pos > 0:
-                    pos -= 1
-                    f.seek(pos, 0)  # 0 means seek relative to the start of the file
-                    if f.read(1) == ' ':
-                        break
-
-                # Read the number and convert it to an integer
-                data_point_idx = int(f.readline().rstrip())
-            for expr in expr_list:
-                f.write(expr.str + "\n")
-            f.write("\n")
-            data_point_idx += 1
-            f.write("idx: " + str(data_point_idx) + "\n")
-        # store the solutions
-        with open("solutions.txt", "a") as f:
-            # if the file is empty, write the variables from the sol in the first line
-            for key in sol_list[0][0].keys():
-                num_spaces = MAX_DIGIT_WIDTH - len(str(key))
-                f.write(" " * num_spaces + str(key))
-            f.write("\n")
-            for sol in sol_list:
-                for key in sol[0].keys():
-                    num_spaces = MAX_DIGIT_WIDTH - len(str(sol[0][key]))
-                    f.write(" " * num_spaces + str(sol[0][key]))
-                f.write("\n")
-            f.write("\n")
-            f.write("idx: " + str(data_point_idx) + "\n")
-        # store the poly lables to the file
-        with open("poly_labels.txt", "a") as f:
-            num_expr = expr_list.__len__()
-            # print "eq" of the quantity of num_expr
-            eq_str = "\"eq\", " * num_expr
-            eq_str = eq_str[:-2]
-            f.write("{\n")
-            f.write("  \"eq\": [" + eq_str +"],\n")
-            f.write("  \"op\": [\n")
-            for expr in expr_list:
-                # declare a set {}
-                poly = set()
-                # always add x since we use w on the RHS
-                poly.add("x")
-                # iterate through each item in the expr
-                for item in expr.item_list:
-                    # get its degree_list
-                    degree_list = item.degree_list
-                    # sum up the degree_list
-                    degree_sum = sum(degree_list)
-                    poly_label = get_poly_label(degree_sum)
-                    # add the poly_label to the set
-                    poly.add(poly_label)
-                # write the poly to the file
-                f.write("    [")
-                for idx, poly_label in enumerate(poly):
-                    to_print = ""
-                    if idx == poly.__len__() - 1:
-                        to_print = "\"" + str(poly_label) + "\""
-                    else:
-                        to_print = "\"" + str(poly_label) + "\", "
-                    f.write(to_print)
-                f.write("],\n")
-            f.write("  ]\n")
-            f.write("},\n")
-            f.write("\n")
-            f.write("idx: " + str(data_point_idx) + "\n")
+        if PRINT_SEPARATELY == True:
+            # print the result to a separate file
+            data_point_idx = print_result_to_separate_file(expr_list, sol_list, data_point_idx)
+        else:
+            data_point_idx = print_result_to_single_file(expr_list, sol_list, data_point_idx)
         data_point_num += 1
         print("data point number: " + str(data_point_num))
