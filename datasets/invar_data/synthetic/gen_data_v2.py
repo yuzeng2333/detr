@@ -338,7 +338,7 @@ if os.path.exists("equations.txt") == True and all_exist == False:
 
 data_point_num = 0
 data_point_idx = 0
-MAX_DIGIT_WIDTH = 5
+MAX_DIGIT_WIDTH = 8
 # 16 is the number of data points (a set of equations and inequalities)
 #  we want to generate
 while data_point_num < EXPERIMENT_TO_RUN: 
