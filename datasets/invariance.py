@@ -5,6 +5,7 @@ COCO dataset which returns image_id for evaluation.
 Mostly copy-paste from https://github.com/pytorch/vision/blob/13b35ff/references/detection/coco_utils.py
 """
 from pathlib import Path
+from numpy import int64
 
 import torch
 import torch.utils.data
@@ -12,12 +13,12 @@ import torchvision
 import pandas as pd
 from torch.utils.data import Dataset
 import json
+import numpy as np
 
 def ReadInvarianceData(data_folder, label_folder, filenames):
     # if filenames is None, read all files in data_folder
     # find all the file names in data_folder
-    if filenames is None:
-        filenames = []
+    if not filenames:
         for file in data_folder.iterdir():
             if file.is_file():
                 # remove the suffix in file name
@@ -53,7 +54,11 @@ def ReadInvarianceData(data_folder, label_folder, filenames):
         col_num = len(data.columns)
         assert col_num <= MAX_VAR_NUM, f'number of columns in {filename} must be at most {MAX_VAR_NUM}'
         # convert the data to tensor
-        data = torch.tensor(data.values)
+        if data.values.dtype == np.object:
+            data_values = np.array([list(map(int, item[0].split())) for item in data.values])
+        else:
+            data_values = data.values
+        data = torch.tensor(data_values)
         # transpose
         print(data.shape)
         data = data.transpose(0, 1)
