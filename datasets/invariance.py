@@ -14,6 +14,16 @@ from torch.utils.data import Dataset
 import json
 
 def ReadInvarianceData(data_folder, label_folder, filenames):
+    # if filenames is None, read all files in data_folder
+    # find all the file names in data_folder
+    if filenames is None:
+        filenames = []
+        for file in data_folder.iterdir():
+            if file.is_file():
+                # remove the suffix in file name
+                filename = file.name
+                filename_without_suffix = filename.split('.')[0]
+                filenames.append(filename_without_suffix)
     # map from file name to the list of iloc
     MAX_VAR_NUM = 6
     batch_mask = torch.tensor([]) # shape: (num_files, MAX_VAR_NUM)
@@ -105,6 +115,7 @@ def build(image_set, args):
 
     data_folder, label_folder = PATHS[image_set]
     # currently only load the data for ps2
-    file_names = ["ps2", "ps3", "ps4_1", "ps5_1", "ps6_1", "sqrt1_1"]
+    #file_names = ["ps2", "ps3", "ps4_1", "ps5_1", "ps6_1", "sqrt1_1"]
+    file_names = []
     dataset = InvarianceDateSet(data_folder, label_folder, file_names)
     return dataset
