@@ -277,7 +277,7 @@ def print_result_to_separate_file(expr_list, sol_list, data_point_idx):
             f.write("{\n")
             f.write("  \"eq\": [" + eq_str +"],\n")
             f.write("  \"op\": [\n")
-            for idx, expr in enumerate(expr_list):
+            for expr_idx, expr in enumerate(expr_list, start=0):
                 # declare a set {}
                 poly = set()
                 # always add x since we use w on the RHS
@@ -293,14 +293,14 @@ def print_result_to_separate_file(expr_list, sol_list, data_point_idx):
                     poly.add(poly_label)
                 # write the poly to the file
                 f.write("    [")
-                for idx, poly_label in enumerate(poly):
+                for poly_idx, poly_label in enumerate(poly, start=0):
                     to_print = ""
-                    if idx == poly.__len__() - 1:
+                    if poly_idx == poly.__len__() - 1:
                         to_print = "\"" + str(poly_label) + "\""
                     else:
                         to_print = "\"" + str(poly_label) + "\", "
                     f.write(to_print)
-                if idx == expr_list.__len__() - 1:
+                if expr_idx == expr_list.__len__() - 1:
                     f.write("]\n")
                 else:
                     f.write("],\n")
