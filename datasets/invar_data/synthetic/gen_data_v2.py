@@ -235,6 +235,13 @@ def print_result_to_single_file(expr_list, sol_list, data_point_idx):
 
 
 def print_result_to_separate_file(expr_list, sol_list, data_point_idx):
+    # check if the three directories exist
+    if not os.path.exists("./equations"):
+        os.makedirs("./equations")
+    if not os.path.exists("./data"):
+        os.makedirs("./data")
+    if not os.path.exists("./label"):
+        os.makedirs("./label")
     # count how many files there are in the directory of equations
     path = "./equations/"
     num_files = len([f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))])
@@ -261,6 +268,7 @@ def print_result_to_separate_file(expr_list, sol_list, data_point_idx):
                     f.write(" " * num_spaces + str(sol[0][key]))
                 f.write("\n")
         # store the poly lables to the file
+        file_name = str(data_point_idx) + ".json"
         with open("./label/"+file_name, "w") as f:
             num_expr = expr_list.__len__()
             # print "eq" of the quantity of num_expr
@@ -269,7 +277,7 @@ def print_result_to_separate_file(expr_list, sol_list, data_point_idx):
             f.write("{\n")
             f.write("  \"eq\": [" + eq_str +"],\n")
             f.write("  \"op\": [\n")
-            for expr in expr_list:
+            for idx, expr in enumerate(expr_list):
                 # declare a set {}
                 poly = set()
                 # always add x since we use w on the RHS
@@ -292,9 +300,12 @@ def print_result_to_separate_file(expr_list, sol_list, data_point_idx):
                     else:
                         to_print = "\"" + str(poly_label) + "\", "
                     f.write(to_print)
-                f.write("],\n")
+                if idx == expr_list.__len__() - 1:
+                    f.write("]\n")
+                else:
+                    f.write("],\n")
             f.write("  ]\n")
-            f.write("},\n")
+            f.write("}\n")
         return data_point_idx
     else:
         return -1
