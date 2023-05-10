@@ -248,7 +248,7 @@ def print_result_to_separate_file(expr_list, sol_list, data_point_idx):
     if num_files >= data_point_idx:
         data_point_idx = num_files
 
-    file_name = str(data_point_idx) + ".txt"
+    file_name = str(data_point_idx) + ".csv"
     if sol_list.__len__() >= MIN_SOL_NUM:
         # store the equations
         with open("./equations/"+file_name, "w") as f:
