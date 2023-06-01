@@ -100,7 +100,8 @@ def check_imaginary(sol_list):
 
 def get_expr_list():
     expr_list = []
-    #random.seed(0)
+    # var_list is a set of indices of variables
+    var_set = set()
     expr_num = random.randint(1, MAX_EXPR_NUM)
     for i in range(expr_num):
         # generate a single expression
@@ -125,6 +126,14 @@ def get_expr_list():
                     single_degree = random.randint(0, degree)
                     degree_list.append(single_degree)
                     degree = degree - single_degree
+            # if the degree_list are all 0, set a random variable to 1
+            if sum(degree_list) == 0:
+                idx = random.randint(0, MAX_VAR_NUM - 1)
+                degree_list[idx] = 1
+            # add indices whose degree is non-zero to the var_list
+            for idx, degree in enumerate(degree_list):
+                if degree != 0:
+                    var_set.add(idx)
             item_list.append(SingleItem(coeff, degree_list))
         # with 50% chance, the const is 0
         const = 0
@@ -136,7 +145,7 @@ def get_expr_list():
     for expr in expr_list:
         expr.gen_str()
         expr.print_expr()
-    return expr_list
+    return expr_list, var_set
 
 
 # return the poly label for the degree
@@ -314,9 +323,7 @@ def print_result_to_separate_file(expr_list, sol_list, data_point_idx):
 # declare the variables
 x, y, z = sympy.symbols("x y z")
 
-w_list = []
-for i in range(expr_num):
-    w_list.append(sympy.symbols('w{}'.format(i)))
+
 
 
 # before run, check if the file exists: equations.txt solutions.txt poly_labels.txt
@@ -342,7 +349,12 @@ MAX_DIGIT_WIDTH = 8
 # 16 is the number of data points (a set of equations and inequalities)
 #  we want to generate
 while data_point_num < EXPERIMENT_TO_RUN: 
-    expr_list = get_expr_list()
+    expr_list, var_set = get_expr_list()
+    expr_num = expr_list.__len__()
+    # w_list stores the variables on the RHS of the equations
+    w_list = []
+    for i in range(expr_num):
+        w_list.append(sympy.symbols('w{}'.format(i)))
     # find up to SOL_NUM solutions to the equations
     sol_list = []
     # solve the equations with sympy
@@ -355,29 +367,32 @@ while data_point_num < EXPERIMENT_TO_RUN:
             break
         equations = []
         max_xyz = 0
-        # assign a random number to x
-        x_val = int(random.gauss(-1*X_MAX/3, X_MAX/3))
-        max_xyz = max(max_xyz, x_val)
-        x_eq = "x + " + str(x_val)
-        x_eq_expr = parse_expr(x_eq)
-        equations.append(sympy.Eq(x_eq_expr, 0))
+        # assign a random number to x is 0 is in var_set
+        if 0 in var_set:
+            x_val = int(random.gauss(-1*X_MAX/3, X_MAX/3))
+            max_xyz = max(max_xyz, x_val)
+            x_eq = "x + " + str(x_val)
+            x_eq_expr = parse_expr(x_eq)
+            equations.append(sympy.Eq(x_eq_expr, 0))
 
         # assign a random number to y
-        y_val = int(random.gauss(-1*X_MAX/3, X_MAX/3))
-        max_xyz = max(max_xyz, y_val)
-        y_eq = "y + " + str(y_val)
-        y_eq_expr = parse_expr(y_eq)
-        equations.append(sympy.Eq(y_eq_expr, 0))
+        if 1 in var_set:
+            y_val = int(random.gauss(-1*X_MAX/3, X_MAX/3))
+            max_xyz = max(max_xyz, y_val)
+            y_eq = "y + " + str(y_val)
+            y_eq_expr = parse_expr(y_eq)
+            equations.append(sympy.Eq(y_eq_expr, 0))
 
         # assign a random number to z
-        z_val = int(random.gauss(-1*X_MAX/3, X_MAX/3))
-        max_xyz = max(max_xyz, z_val)
-        z_eq = "z + " + str(z_val)
-        z_eq_expr = parse_expr(z_eq)
-        equations.append(sympy.Eq(z_eq_expr, 0))
+        if 2 in var_set:
+            z_val = int(random.gauss(-1*X_MAX/3, X_MAX/3))
+            max_xyz = max(max_xyz, z_val)
+            z_eq = "z + " + str(z_val)
+            z_eq_expr = parse_expr(z_eq)
+            equations.append(sympy.Eq(z_eq_expr, 0))
 
         # add all the equations to the list
-        assert expr_list.__len__() == expr_num
+        #assert expr_list.__len__() == expr_num
         for idx, expr in enumerate(expr_list):
             expr_str = expr.str
             if expr.is_eq == 1:
