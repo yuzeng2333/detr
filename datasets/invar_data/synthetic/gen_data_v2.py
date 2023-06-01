@@ -25,8 +25,6 @@ else:
 ENABLE_INEQ = False
 EXPERIMENT_TO_RUN = 32
 
-#random.seed(0)
-expr_num = random.randint(1, MAX_EXPR_NUM)
 
 assert SOL_NUM >= MIN_SOL_NUM
 
@@ -102,6 +100,8 @@ def check_imaginary(sol_list):
 
 def get_expr_list():
     expr_list = []
+    #random.seed(0)
+    expr_num = random.randint(1, MAX_EXPR_NUM)
     for i in range(expr_num):
         # generate a single expression
         if ENABLE_INEQ == True:
@@ -356,21 +356,21 @@ while data_point_num < EXPERIMENT_TO_RUN:
         equations = []
         max_xyz = 0
         # assign a random number to x
-        x_val = int(random.gauss(0, X_MAX/3))
+        x_val = int(random.gauss(-1*X_MAX/3, X_MAX/3))
         max_xyz = max(max_xyz, x_val)
         x_eq = "x + " + str(x_val)
         x_eq_expr = parse_expr(x_eq)
         equations.append(sympy.Eq(x_eq_expr, 0))
 
         # assign a random number to y
-        y_val = int(random.gauss(0, X_MAX/3))
+        y_val = int(random.gauss(-1*X_MAX/3, X_MAX/3))
         max_xyz = max(max_xyz, y_val)
         y_eq = "y + " + str(y_val)
         y_eq_expr = parse_expr(y_eq)
         equations.append(sympy.Eq(y_eq_expr, 0))
 
         # assign a random number to z
-        z_val = int(random.gauss(0, X_MAX/3))
+        z_val = int(random.gauss(-1*X_MAX/3, X_MAX/3))
         max_xyz = max(max_xyz, z_val)
         z_eq = "z + " + str(z_val)
         z_eq_expr = parse_expr(z_eq)
