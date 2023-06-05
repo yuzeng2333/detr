@@ -266,14 +266,18 @@ def print_result_to_separate_file(expr_list, sol_list, data_point_idx):
         # store the solutions
         with open("./data/"+file_name+".csv", "w") as f:
             # if the file is empty, write the variables from the sol in the first line
-            for key in sol_list[0][0].keys():
+            for idx, key in enumerate(sol_list[0][0].keys()):
                 num_spaces = MAX_DIGIT_WIDTH - len(str(key))
-                f.write(" " * num_spaces + str(key) + ",")
+                f.write(" " * num_spaces + str(key))
+                if idx != sol_list[0][0].keys().__len__() - 1:
+                    f.write(",")
             f.write("\n")
             for sol in sol_list:
-                for key in sol[0].keys():
+                for idx, key in enumerate(sol[0].keys()):
                     num_spaces = MAX_DIGIT_WIDTH - len(str(sol[0][key]))
-                    f.write(" " * num_spaces + str(sol[0][key]) + ",")
+                    f.write(" " * num_spaces + str(sol[0][key]))
+                    if idx != sol[0].keys().__len__() - 1:
+                        f.write(",")
                 f.write("\n")
         # store the poly lables to the file
         with open("./label/"+file_name+".json", "w") as f:
