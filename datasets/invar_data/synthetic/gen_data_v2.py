@@ -263,7 +263,6 @@ def print_result_to_separate_file(expr_list, sol_list, data_point_idx):
         with open("./equations/"+file_name+".txt", "w") as f:
             for expr in expr_list:
                 f.write(expr.str + "\n")
-            data_point_idx += 1
         # store the solutions
         with open("./data/"+file_name+".csv", "w") as f:
             # if the file is empty, write the variables from the sol in the first line
@@ -277,8 +276,7 @@ def print_result_to_separate_file(expr_list, sol_list, data_point_idx):
                     f.write(" " * num_spaces + str(sol[0][key]) + ",")
                 f.write("\n")
         # store the poly lables to the file
-        file_name = str(data_point_idx) + ".json"
-        with open("./label/"+file_name, "w") as f:
+        with open("./label/"+file_name+".json", "w") as f:
             num_expr = expr_list.__len__()
             # print "eq" of the quantity of num_expr
             eq_str = "\"eq\", " * num_expr
@@ -315,7 +313,7 @@ def print_result_to_separate_file(expr_list, sol_list, data_point_idx):
                     f.write("],\n")
             f.write("  ]\n")
             f.write("}\n")
-        return data_point_idx
+        return data_point_idx + 1
     else:
         return -1
 
