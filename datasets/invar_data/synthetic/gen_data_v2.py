@@ -269,12 +269,12 @@ def print_result_to_separate_file(expr_list, sol_list, data_point_idx):
             # if the file is empty, write the variables from the sol in the first line
             for key in sol_list[0][0].keys():
                 num_spaces = MAX_DIGIT_WIDTH - len(str(key))
-                f.write(" " * num_spaces + str(key))
+                f.write(" " * num_spaces + str(key) + ",")
             f.write("\n")
             for sol in sol_list:
                 for key in sol[0].keys():
                     num_spaces = MAX_DIGIT_WIDTH - len(str(sol[0][key]))
-                    f.write(" " * num_spaces + str(sol[0][key]))
+                    f.write(" " * num_spaces + str(sol[0][key]) + ",")
                 f.write("\n")
         # store the poly lables to the file
         file_name = str(data_point_idx) + ".json"
