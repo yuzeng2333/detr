@@ -23,7 +23,7 @@ if RUN_REAL:
 else:
     MIN_SOL_NUM = 3
 ENABLE_INEQ = False
-EXPERIMENT_TO_RUN = 32
+EXPERIMENT_TO_RUN = 5
 
 
 assert SOL_NUM >= MIN_SOL_NUM
@@ -257,15 +257,15 @@ def print_result_to_separate_file(expr_list, sol_list, data_point_idx):
     if num_files >= data_point_idx:
         data_point_idx = num_files
 
-    file_name = str(data_point_idx) + ".csv"
+    file_name = str(data_point_idx)
     if sol_list.__len__() >= MIN_SOL_NUM:
         # store the equations
-        with open("./equations/"+file_name, "w") as f:
+        with open("./equations/"+file_name+".txt", "w") as f:
             for expr in expr_list:
                 f.write(expr.str + "\n")
             data_point_idx += 1
         # store the solutions
-        with open("./data/"+file_name, "w") as f:
+        with open("./data/"+file_name+".csv", "w") as f:
             # if the file is empty, write the variables from the sol in the first line
             for key in sol_list[0][0].keys():
                 num_spaces = MAX_DIGIT_WIDTH - len(str(key))
@@ -349,6 +349,8 @@ MAX_DIGIT_WIDTH = 8
 # 16 is the number of data points (a set of equations and inequalities)
 #  we want to generate
 while data_point_num < EXPERIMENT_TO_RUN: 
+    print("data point number: " + str(data_point_num))
+    data_point_num += 1
     expr_list, var_set = get_expr_list()
     expr_num = expr_list.__len__()
     # w_list stores the variables on the RHS of the equations
@@ -362,7 +364,7 @@ while data_point_num < EXPERIMENT_TO_RUN:
     run_num = 0
     while sol_list.__len__() < SOL_NUM:
         run_num += 1
-        print("run number: " + str(run_num))
+        #print("run number: " + str(run_num))
         if run_num > 1000:
             break
         equations = []
@@ -400,8 +402,8 @@ while data_point_num < EXPERIMENT_TO_RUN:
                 expr_str_expr = parse_expr(expr_str)
                 equations.append(sympy.Eq(expr_str_expr, w_list[idx]))
         # print all the equations
-        for eq in equations:
-            print(eq)
+        #for eq in equations:
+        #    print(eq)
         # solve the equations
         sol = sympy.solve(equations, dict=True)
         # skip the sol if it is empty
@@ -438,7 +440,7 @@ while data_point_num < EXPERIMENT_TO_RUN:
         if all_pass == True:
             # append the solution to the list
             sol_num = sol_list.__len__()
-            print("solution found: " + str(sol_num))
+            #print("solution found: " + str(sol_num))
             print(sol)
             sol_list.append(sol)
 
@@ -447,5 +449,3 @@ while data_point_num < EXPERIMENT_TO_RUN:
             data_point_idx = print_result_to_separate_file(expr_list, sol_list, data_point_idx)
         else:
             data_point_idx = print_result_to_single_file(expr_list, sol_list, data_point_idx)
-        data_point_num += 1
-        print("data point number: " + str(data_point_num))
