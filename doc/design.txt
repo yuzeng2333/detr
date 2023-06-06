@@ -6,9 +6,9 @@ It should be treated as a setence of 6 words. Each word has a dimension of 1000 
 2. output classifiers
 (1) If we use N output queries, then for the final output, there will be N items. From each item we will predict an equation/inequality.
 We need to use a classifier, with the options: x, x^2, xy, x^3, x^2*y, (x mod 2)
-design choice:
-a. 2 parallel classifier sequences
-first classifier sequence: each predicates the variables used for one item in the final addition: x, y, 1
-second classifier sequence: each predicates the degree of each variable in the first classifier: 2, 1, 0, => x^2*y.
 
-b. tree-structure output: maybe more complex, consider later
+3. op_idx: a mapping from the op(x, x2, x3, ...) to its numbering. Currently the size is 6. It is defined in this file: ./datasets/invar_spec.py
+
+4. output shapes:
+(1) eq: [batch_size, num_queries, eq_type_num], "num_queries" is the number for the limit of possible equations/inequalities in this data point. "eq_type_num" is the number of types for eq. The number is 2+1(no-object)
+(2) op: [batch_size, num_queries, op_type_num], "op_type_num" is the same as the length of op_idx. Currently the value is 6

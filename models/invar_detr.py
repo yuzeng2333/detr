@@ -122,16 +122,18 @@ class SetCriterion(nn.Module):
             one_hot[op_idx[op]] = 1
         return one_hot
 
-    def loss_labels(self, outputs, targets, indices, num_boxes, log=True):
+    # uses cross_entropy loss for eqs
+    def loss_eq(self, outputs, targets, indices, num_boxes, log=True):
         """Classification loss (NLL)
         targets dicts must contain the key "labels" containing a tensor of dim [nb_target_boxes]
         """
         assert 'eq' in outputs
-        src_logits = outputs['eq'] # [batch_size x num_queries x (num_eq + 1)] num_eq == 2
+        src_logits = outputs['eq'] # [batch_size x num_queries, (num_eq + 1)] num_eq == 2
+        # num_queries is the max number of equations/inequalities to be detected for one data (# iter x # vars)
+        # num_eq is the number of eq types. There are only two types of eqs: eq and ineq
 
         # idx has two parts, the first part is the batch index, the second part is the index of the query
         idx = self._get_src_permutation_idx(indices)
-        #target_classes_o = torch.cat([t["eq"][J] for t, (_, J) in zip(targets, indices)])
         target_classes_o_list = []
         for t, (_, J) in zip(targets, indices):
             # convert J from tensor to a list
@@ -142,7 +144,6 @@ class SetCriterion(nn.Module):
                 num_label = torch.tensor(eq_idx[target_classes_o_i])
                 target_classes_o_list.append(num_label)
         # convert the list to a tensor
-        #target_classes_o_list = torch.tensor(target_classes_o_list)
         # ground truth labels for each matched object
         target_classes_o = torch.stack(target_classes_o_list)
 
@@ -151,12 +152,9 @@ class SetCriterion(nn.Module):
         target_classes = torch.full(sizes, self.num_classes,
                                     dtype=torch.int64, device=src_logits.device)
         # set the last dimension as the one-hot encodings of the non-empty classes
-        #one_hot = self.convert_eq_to_idx('none')
-        #target_classes[:, :, :] = one_hot
         # transform idx: the inner dimension should be pairs from the first and the second dimension
         # of the idx
         pos = torch.stack(idx, dim=1)
-        #target_classes[pos, :] = target_classes_o
         # assign target_classes_o to the corresponding positions in target_classes
         # use zip to iterate each pos and target_classes_o
         for p, t in zip(pos, target_classes_o):
@@ -166,11 +164,14 @@ class SetCriterion(nn.Module):
             p = tuple(p.tolist())
             target_classes[p[0], p[1]] = t
 
-        #src_logits = src_logits.transpose(1, 2)
         # flatten the logits
         src_logits = src_logits.flatten(0, 1)
         # flatten the target classes
         target_classes = target_classes.flatten(0, 1)
+        # shape of srd_logits: [batch_size x num_queries, (num_eq + 1)], 
+        # -- each row is the probability of each eq type (including the no-object class)
+        # shape of target_classes: [batch_size x num_queries]
+        # -- each row is the ground truth eq type for each query: 0, 1, 2 (2 is the no-object class)
         loss_ce = F.cross_entropy(src_logits, target_classes, self.empty_weight)
         losses = {'loss_ce': loss_ce}
 
@@ -193,6 +194,7 @@ class SetCriterion(nn.Module):
         losses = {'cardinality_error': card_err}
         return losses
 
+    # use l1 loss for ops. But this is not a good idea, since the ops are not categorical
     def loss_op(self, outputs, targets, indices, num_boxes):
         """Compute the losses related to the bounding boxes, the L1 regression loss and the GIoU loss
            targets dicts must contain the key "boxes" containing a tensor of dim [nb_target_boxes, 4]
@@ -200,21 +202,23 @@ class SetCriterion(nn.Module):
         """
         #assert 'pred_boxes' in outputs
         idx = self._get_src_permutation_idx(indices)
-        # shape of src_boxes: total_eq_num x len(op_idx) = 4 x 6
-        src_boxes = outputs['op'][idx]
+        # shape of src_boxes: [true_total_eq_num, len(op_idx)] = 4 x 6
+        # true_total_eq_num is the number of eq/ineq from the labels
+        selected_output_ops = outputs['op'][idx]
         # target_boxes should have the same shape as src_boxes
         #target_boxes = torch.cat([t['op'][i] for t, (_, i) in zip(targets, indices)], dim=0)
-        target_boxes_list = []
+        label_op_list = []
         for t, (_, i) in zip(targets, indices):
             # i is a 1-d tensor
             i = i.tolist()
             for j in i:
                 op_list = t['op'][j]
                 encoding = self.convert_op_to_idx(op_list)
-                target_boxes_list.append(encoding)
-        target_boxes = torch.stack(target_boxes_list)
+                label_op_list.append(encoding)
+        label_ops = torch.stack(label_op_list)
 
-        loss_bbox = F.l1_loss(src_boxes, target_boxes, reduction='none')
+        #loss_bbox = F.l1_loss(src_boxes, target_boxes, reduction='none')
+        loss_bbox = torch.nn.BCEWithLogitsLoss(selected_output_ops, label_ops)
 
         losses = {}
         losses['loss_op'] = loss_bbox.sum() / num_boxes
@@ -265,7 +269,7 @@ class SetCriterion(nn.Module):
 
     def get_loss(self, loss, outputs, targets, indices, num_boxes, **kwargs):
         loss_map = {
-            'eq': self.loss_labels,
+            'eq': self.loss_eq,
             'cardinality': self.loss_cardinality,
             'op': self.loss_op
             #'masks': self.loss_masks
