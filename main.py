@@ -119,7 +119,7 @@ def main(args):
     np.random.seed(seed)
     random.seed(seed)
 
-    model, criterion, postprocessors = build_model(args)
+    model, criterion, postprocessors, count_accuracy = build_model(args)
     model.to(device)
 
     model_without_ddp = model
@@ -181,7 +181,7 @@ def main(args):
 
     print("Start training")
     train_invar(model, data_loader_train, criterion, optimizer, device)
-
+    evaluate(model, data_loader_val, count_accuracy, device=device)
     start_time = time.time()
     
 

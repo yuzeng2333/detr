@@ -122,13 +122,9 @@ class SetCriterion(nn.Module):
             one_hot[op_idx[op]] = 1
         return one_hot
 
-    # uses cross_entropy loss for eqs
-    def loss_eq(self, outputs, targets, indices, num_boxes, log=True):
-        """Classification loss (NLL)
-        targets dicts must contain the key "labels" containing a tensor of dim [nb_target_boxes]
-        """
+    def get_eq_outputs_and_labels(self, outputs, targets, indices):
         assert 'eq' in outputs
-        src_logits = outputs['eq'] # [batch_size x num_queries, (num_eq + 1)] num_eq == 2
+        outputs_eq = outputs['eq'] # [batch_size x num_queries, (num_eq + 1)] num_eq == 2
         # num_queries is the max number of equations/inequalities to be detected for one data (# iter x # vars)
         # num_eq is the number of eq types. There are only two types of eqs: eq and ineq
 
@@ -148,9 +144,9 @@ class SetCriterion(nn.Module):
         target_classes_o = torch.stack(target_classes_o_list)
 
         # initialize the target classes with the no-object class
-        sizes = list(src_logits.shape[:2])
+        sizes = list(outputs_eq.shape[:2])
         target_classes = torch.full(sizes, self.num_classes,
-                                    dtype=torch.int64, device=src_logits.device)
+                                    dtype=torch.int64, device=outputs_eq.device)
         # set the last dimension as the one-hot encodings of the non-empty classes
         # transform idx: the inner dimension should be pairs from the first and the second dimension
         # of the idx
@@ -165,19 +161,25 @@ class SetCriterion(nn.Module):
             target_classes[p[0], p[1]] = t
 
         # flatten the logits
-        src_logits = src_logits.flatten(0, 1)
-        # flatten the target classes
-        target_classes = target_classes.flatten(0, 1)
-        # shape of srd_logits: [batch_size x num_queries, (num_eq + 1)], 
+        # shape of outputs_eq: [batch_size x num_queries, (num_eq + 1)], 
         # -- each row is the probability of each eq type (including the no-object class)
         # shape of target_classes: [batch_size x num_queries]
         # -- each row is the ground truth eq type for each query: 0, 1, 2 (2 is the no-object class)
-        loss_ce = F.cross_entropy(src_logits, target_classes, self.empty_weight)
+        outputs_eq = outputs_eq.flatten(0, 1)
+        # flatten the target classes
+        target_classes = target_classes.flatten(0, 1)
+        return outputs_eq, target_classes
+
+
+    # uses cross_entropy loss for eqs
+    def loss_eq(self, outputs, targets, indices, num_boxes, log=True):
+        """Classification loss (NLL)
+        targets dicts must contain the key "labels" containing a tensor of dim [nb_target_boxes]
+        """
+        outputs_eq, target_classes = self.get_eq_outputs_and_labels(outputs, targets, indices)
+        loss_ce = F.cross_entropy(outputs_eq, target_classes, self.empty_weight)
         losses = {'loss_ce': loss_ce}
 
-        #if log:
-        #    # TODO this should probably be a separate loss, not hacked in this one here
-        #    losses['class_error'] = 100 - accuracy(src_logits[idx], target_classes_o)[0]
         return losses
 
     @torch.no_grad()
@@ -194,12 +196,8 @@ class SetCriterion(nn.Module):
         losses = {'cardinality_error': card_err}
         return losses
 
-    # use l1 loss for ops. But this is not a good idea, since the ops are not categorical
-    def loss_op(self, outputs, targets, indices, num_boxes):
-        """Compute the losses related to the bounding boxes, the L1 regression loss and the GIoU loss
-           targets dicts must contain the key "boxes" containing a tensor of dim [nb_target_boxes, 4]
-           The target boxes are expected in format (center_x, center_y, w, h), normalized by the image size.
-        """
+
+    def get_op_outputs_and_labels(self, outputs, targets, indices):
         #assert 'pred_boxes' in outputs
         idx = self._get_src_permutation_idx(indices)
         # shape of src_boxes: [true_total_eq_num, len(op_idx)] = 4 x 6
@@ -216,8 +214,15 @@ class SetCriterion(nn.Module):
                 encoding = self.convert_op_to_idx(op_list)
                 label_op_list.append(encoding)
         label_ops = torch.stack(label_op_list)
+        return selected_output_ops, label_ops
 
-        #loss_bbox = F.l1_loss(src_boxes, target_boxes, reduction='none')
+    # use l1 loss for ops. But this is not a good idea, since the ops are not categorical
+    def loss_op(self, outputs, targets, indices, num_boxes):
+        """Compute the losses related to the bounding boxes, the L1 regression loss and the GIoU loss
+           targets dicts must contain the key "boxes" containing a tensor of dim [nb_target_boxes, 4]
+           The target boxes are expected in format (center_x, center_y, w, h), normalized by the image size.
+        """
+        selected_output_ops, label_ops = self.get_op_outputs_and_labels(outputs, targets, indices)
         BCE_loss = torch.nn.BCEWithLogitsLoss()
         loss_bbox = BCE_loss(selected_output_ops, label_ops)
 
@@ -321,6 +326,48 @@ class SetCriterion(nn.Module):
         return losses
 
 
+# this class uses many functions in SetCriterion
+class CountAccuracy(nn.Module):
+    def __init__(self, num_classes, matcher, weight_dict, eos_coef, losses):
+        super().__init__()
+        self.set_criterion = SetCriterion(num_classes, matcher, weight_dict, eos_coef, losses)
+
+    def get_eq_accuracy(self, outputs, targets):
+        # shape of output_eq: [batch_size x num_eq, num_classes+1]
+        # shape of label_eq: [batch_size x num_eq, 1]
+        output_eq, label_eq = self.set_criterion.get_eq_outputs_and_labels(outputs, targets)
+        # get the index of the max probability for each row in output_eq
+        pred_eq = output_eq.argmax(dim=-1)
+        # compare the prediction with the label
+        correct = pred_eq == label_eq
+        # count the number of correct predictions
+        num_correct = correct.sum().item()
+        # count the number of equations
+        num_eq = label_eq.shape[0]
+        return num_correct, num_eq
+
+    def get_op_accuracy(self, outputs, targets):
+        # shape of output_op: [batch_size x num_op, 4]
+        # shape of label_op: [batch_size x num_op, 1]
+        output_op, label_op = self.set_criterion.get_op_outputs_and_labels(outputs, targets)
+        # for each element of output_op, set it to 1 if it is greater than 0.5, otherwise set it to 0
+        pred_op = (output_op > 0.5).float()
+        # compare the prediction with the label
+        correct = pred_op == label_op
+        # count the number of correct predictions
+        num_correct = correct.sum().item()
+        # count the number of operations
+        num_op = label_op.shape[0]
+        return num_correct, num_op
+
+    def forward(self, outputs, targets):
+        num_correct_eq, num_eq = self.get_eq_accuracy(outputs, targets)
+        num_correct_op, num_op = self.get_op_accuracy(outputs, targets)
+        eq_accuracy = num_correct_eq / num_eq
+        op_accuracy = num_correct_op / num_op
+        return eq_accuracy, op_accuracy
+
+
 class PostProcess(nn.Module):
     """ This module converts the model's output into the format expected by the coco api"""
     @torch.no_grad()
@@ -415,6 +462,8 @@ def build(args):
     criterion = SetCriterion(num_classes, matcher=matcher, weight_dict=weight_dict,
                              eos_coef=args.eos_coef, losses=losses)
     criterion.to(device)
+    count_accuracy = CountAccuracy(num_classes, matcher=matcher, weight_dict=weight_dict,
+                                   eos_coef=args.eos_coef, losses=losses)
     postprocessors = {'bbox': PostProcess()}
     if args.masks:
         postprocessors['segm'] = PostProcessSegm()
@@ -422,4 +471,4 @@ def build(args):
             is_thing_map = {i: i <= 90 for i in range(201)}
             postprocessors["panoptic"] = PostProcessPanoptic(is_thing_map, threshold=0.85)
 
-    return model, criterion, postprocessors
+    return model, criterion, postprocessors, count_accuracy

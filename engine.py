@@ -184,10 +184,10 @@ def train_invar(model, dataloader, criterion, optimizer, device):
             optimizer.step()
 
 
-def evaluate(model, dataloader, criterion, device):
+def evaluate(model, dataloader, count_accuracy, device):
     model.eval()  # Put the model in evaluation mode
-    total_loss = 0
-    correct_predictions = 0
+    all_eq_accuracy = []
+    all_op_accuracy = []
 
     # We don't need to update the model parameters, so we use torch.no_grad() 
     with torch.no_grad():
@@ -196,25 +196,14 @@ def evaluate(model, dataloader, criterion, device):
             inputs = inputs.to(device)
 
             outputs = model(inputs, masks)
-            loss = criterion(outputs, targets)
-            
-            # Compute total loss
-            total_loss += loss.item()
-            
-            # Get the predicted labels (they are the index of the max probability)
-            _, predicted = torch.max(outputs.data, 1)
-            
-            # Count number of correct predictions
-            correct_predictions += (predicted == targets).sum().item()
-            
-    # Calculate average loss over all data
-    avg_loss = total_loss / len(dataloader.dataset)
+            eq_accuracy, op_accuracy = count_accuracy(outputs, targets)
+            all_eq_accuracy.append(eq_accuracy)
+            all_op_accuracy.append(op_accuracy)
+            # print the two accuracies
+            print("eq_accuracy: ", eq_accuracy)
+            print("op_accuracy: ", op_accuracy)
     
-    # Calculate accuracy
-    accuracy = correct_predictions / len(dataloader.dataset)
-    
-    print(f"Evaluated on {len(dataloader.dataset)} examples")
-    print(f"Average loss: {avg_loss:.4f}")
-    print(f"Accuracy: {accuracy:.4f}")
-
-    return avg_loss, accuracy
+    avg_eq_accuracy = sum(all_eq_accuracy) / len(all_eq_accuracy)
+    avg_op_accuracy = sum(all_op_accuracy) / len(all_op_accuracy)
+    print("avg_eq_accuracy: ", avg_eq_accuracy)
+    print("avg_op_accuracy: ", avg_op_accuracy)
