@@ -218,7 +218,8 @@ class SetCriterion(nn.Module):
         label_ops = torch.stack(label_op_list)
 
         #loss_bbox = F.l1_loss(src_boxes, target_boxes, reduction='none')
-        loss_bbox = torch.nn.BCEWithLogitsLoss(selected_output_ops, label_ops)
+        BCE_loss = torch.nn.BCEWithLogitsLoss()
+        loss_bbox = BCE_loss(selected_output_ops, label_ops)
 
         losses = {}
         losses['loss_op'] = loss_bbox.sum() / num_boxes
