@@ -12,7 +12,7 @@ from torch.utils.data import DataLoader, DistributedSampler
 
 import datasets
 import util.misc as utils
-from datasets import build_dataset, get_coco_api_from_dataset
+from datasets import build_dataset 
 from engine import evaluate, train_invar
 from models import build_model
 from util.misc import custom_collate_fn as collate_fn
@@ -148,12 +148,12 @@ def main(args):
     data_loader_train = DataLoader(dataset_train, batch_size=batch_size, collate_fn=collate_fn, shuffle=True)
     data_loader_val = DataLoader(dataset_val, batch_size=batch_size, collate_fn=collate_fn, shuffle=True)
 
-    if args.dataset_file == "coco_panoptic":
-        # We also evaluate AP during panoptic training, on original coco DS
-        coco_val = datasets.coco.build("val", args)
-        base_ds = get_coco_api_from_dataset(coco_val)
-    else:
-        base_ds = get_coco_api_from_dataset(dataset_val)
+    #if args.dataset_file == "coco_panoptic":
+    #    # We also evaluate AP during panoptic training, on original coco DS
+    #    coco_val = datasets.coco.build("val", args)
+    #    base_ds = get_coco_api_from_dataset(coco_val)
+    #else:
+    #    base_ds = get_coco_api_from_dataset(dataset_val)
 
     if args.frozen_weights is not None:
         checkpoint = torch.load(args.frozen_weights, map_location='cpu')
@@ -172,12 +172,12 @@ def main(args):
             lr_scheduler.load_state_dict(checkpoint['lr_scheduler'])
             args.start_epoch = checkpoint['epoch'] + 1
 
-    if args.eval:
-        test_stats, coco_evaluator = evaluate(model, criterion, postprocessors,
-                                              data_loader_val, base_ds, device, args.output_dir)
-        if args.output_dir:
-            utils.save_on_master(coco_evaluator.coco_eval["bbox"].eval, output_dir / "eval.pth")
-        return
+    #if args.eval:
+    #    test_stats, coco_evaluator = evaluate(model, criterion, postprocessors,
+    #                                          data_loader_val, base_ds, device, args.output_dir)
+    #    if args.output_dir:
+    #        utils.save_on_master(coco_evaluator.coco_eval["bbox"].eval, output_dir / "eval.pth")
+    #    return
 
     print("Start training")
     train_invar(model, data_loader_train, criterion, optimizer, device)

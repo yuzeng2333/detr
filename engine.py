@@ -10,7 +10,6 @@ from typing import Iterable
 import torch
 
 import util.misc as utils
-from datasets.coco_eval import CocoEvaluator
 from datasets.panoptic_eval import PanopticEvaluator
 
 
@@ -65,7 +64,7 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
 
 
 @torch.no_grad()
-def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, output_dir):
+def evaluate_old(model, criterion, postprocessors, data_loader, base_ds, device, output_dir):
     model.eval()
     criterion.eval()
 
@@ -183,3 +182,39 @@ def train_invar(model, dataloader, criterion, optimizer, device):
             print("Total loss: ", total_loss.item())
             total_loss.backward()
             optimizer.step()
+
+
+def evaluate(model, dataloader, criterion, device):
+    model.eval()  # Put the model in evaluation mode
+    total_loss = 0
+    correct_predictions = 0
+
+    # We don't need to update the model parameters, so we use torch.no_grad() 
+    with torch.no_grad():
+        for batch in dataloader:
+            inputs, targets, masks = batch
+            inputs = inputs.to(device)
+
+            outputs = model(inputs, masks)
+            loss = criterion(outputs, targets)
+            
+            # Compute total loss
+            total_loss += loss.item()
+            
+            # Get the predicted labels (they are the index of the max probability)
+            _, predicted = torch.max(outputs.data, 1)
+            
+            # Count number of correct predictions
+            correct_predictions += (predicted == targets).sum().item()
+            
+    # Calculate average loss over all data
+    avg_loss = total_loss / len(dataloader.dataset)
+    
+    # Calculate accuracy
+    accuracy = correct_predictions / len(dataloader.dataset)
+    
+    print(f"Evaluated on {len(dataloader.dataset)} examples")
+    print(f"Average loss: {avg_loss:.4f}")
+    print(f"Accuracy: {accuracy:.4f}")
+
+    return avg_loss, accuracy
