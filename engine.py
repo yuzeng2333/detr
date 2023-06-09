@@ -155,8 +155,11 @@ def train_invar(model, dataloader, criterion, optimizer, device):
     iteration = 20
     print_loss = 0
     print_outputs = 0
-    print_weights = 0
+    print_weights = 0            
+    print("{:<10} {:<10} {:<10}".format('eq', 'op', 'total'))  # printing the headers
+    print("-"*30)  # print line for separation
     for i in range(iteration):
+    #for i in range(2):
         print("Iteration: ", i)
         for batch in dataloader:
             inputs, targets, masks = batch
@@ -179,7 +182,13 @@ def train_invar(model, dataloader, criterion, optimizer, device):
                 print("Found NaN at index")
                 return
             total_loss = sum(loss for loss in loss.values())
-            print("Total loss: ", total_loss.item())
+            # print the all kinds of losses
+            #print("loss: ", loss)
+            # print loss_eq, loss_op and total_loss in a form
+            print("{:<10.2f} {:<10.2f} {:<10.2f}".format(loss['loss_eq'].item(), loss['loss_op'].item(), total_loss.item()))
+            #print("Eq loss: ", loss['loss_eq'].item())
+            #print("Op loss: ", loss['loss_op'].item())
+            #print("Total loss: ", total_loss.item())
             total_loss.backward()
             optimizer.step()
 

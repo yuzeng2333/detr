@@ -36,11 +36,11 @@ class DETR(nn.Module):
         self.op_num = len(op_idx)
         self.num_queries = num_queries
         self.transformer = transformer
-        hidden_dim = transformer.d_model
-        self.eq_embed = nn.Linear(hidden_dim, num_eq + 1)
-        self.op_embed = MLP(hidden_dim, hidden_dim, self.op_num, 3)
-        self.query_embed = nn.Embedding(num_queries, hidden_dim)
-        self.input_proj = nn.Conv2d(backbone.num_channels, hidden_dim, kernel_size=1)
+        self.hidden_dim = transformer.d_model
+        self.eq_embed = nn.Linear(self.hidden_dim, num_eq + 1)
+        self.op_embed = MLP(self.hidden_dim, self.hidden_dim, self.op_num, 3)
+        self.query_embed = nn.Embedding(num_queries, self.hidden_dim)
+        self.input_proj = nn.Conv2d(backbone.num_channels, self.hidden_dim, kernel_size=1)
         self.backbone = backbone
         self.aux_loss = aux_loss
 
@@ -177,8 +177,8 @@ class SetCriterion(nn.Module):
         targets dicts must contain the key "labels" containing a tensor of dim [nb_target_boxes]
         """
         outputs_eq, target_classes = self.get_eq_outputs_and_labels(outputs, targets, indices)
-        loss_ce = F.cross_entropy(outputs_eq, target_classes, self.empty_weight)
-        losses = {'loss_ce': loss_ce}
+        loss_eq = F.cross_entropy(outputs_eq, target_classes, self.empty_weight)
+        losses = {'loss_eq': loss_eq}
 
         return losses
 
@@ -333,9 +333,10 @@ class CountAccuracy(nn.Module):
         self.set_criterion = SetCriterion(num_classes, matcher, weight_dict, eos_coef, losses)
 
     def get_eq_accuracy(self, outputs, targets):
+        indices = self.set_criterion.matcher(outputs, targets)
         # shape of output_eq: [batch_size x num_eq, num_classes+1]
         # shape of label_eq: [batch_size x num_eq, 1]
-        output_eq, label_eq = self.set_criterion.get_eq_outputs_and_labels(outputs, targets)
+        output_eq, label_eq = self.set_criterion.get_eq_outputs_and_labels(outputs, targets, indices)
         # get the index of the max probability for each row in output_eq
         pred_eq = output_eq.argmax(dim=-1)
         # compare the prediction with the label
@@ -344,12 +345,17 @@ class CountAccuracy(nn.Module):
         num_correct = correct.sum().item()
         # count the number of equations
         num_eq = label_eq.shape[0]
+        print('label_eq: ', label_eq)
+        print('pred_eq: ', pred_eq)
+        print('output_eq: ', output_eq)
+        print('\n')
         return num_correct, num_eq
 
     def get_op_accuracy(self, outputs, targets):
+        indices = self.set_criterion.matcher(outputs, targets)
         # shape of output_op: [batch_size x num_op, 4]
         # shape of label_op: [batch_size x num_op, 1]
-        output_op, label_op = self.set_criterion.get_op_outputs_and_labels(outputs, targets)
+        output_op, label_op = self.set_criterion.get_op_outputs_and_labels(outputs, targets, indices)
         # for each element of output_op, set it to 1 if it is greater than 0.5, otherwise set it to 0
         pred_op = (output_op > 0.5).float()
         # compare the prediction with the label
@@ -357,7 +363,7 @@ class CountAccuracy(nn.Module):
         # count the number of correct predictions
         num_correct = correct.sum().item()
         # count the number of operations
-        num_op = label_op.shape[0]
+        num_op = label_op.shape[0] * label_op.shape[1]
         return num_correct, num_op
 
     def forward(self, outputs, targets):
