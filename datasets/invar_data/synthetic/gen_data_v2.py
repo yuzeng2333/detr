@@ -8,7 +8,7 @@ from collections import Counter
 
 RUN_REAL = True
 PRINT_SEPARATELY = True
-EXPERIMENT_TO_RUN = 1
+EXPERIMENT_TO_RUN = 10
 
 MAX_DEGREE = 2
 MAX_VAR_NUM = 3
@@ -89,6 +89,13 @@ class SingleExpr:
             print(self.str + " = " + str(self.const))
         else:
             print(self.str + " < " + str(self.const))
+
+    def get_max_degrees(self):
+        max_degrees = [0, 0, 0, 0, 0]
+        for item in self.item_list:
+            assert len(item.degree_list) == len(max_degrees)
+            max_degrees = [max(x, y) for x, y in zip(max_degrees, item.degree_list)]
+        return max_degrees
 
 
 def check_imaginary(sol_list):
@@ -316,7 +323,18 @@ def print_result_to_separate_file(expr_list, sol_list, data_point_idx):
                     f.write("]\n")
                 else:
                     f.write("],\n")
-            f.write("  ]\n")
+            f.write("  ],\n")
+            # print the max degree for each variable
+            max_degrees = [0, 0, 0, 0, 0]
+            for expr in expr_list:
+                one_max_degrees = expr.get_max_degree()
+                for idx, degree in enumerate(one_max_degrees):
+                    if degree > max_degrees[idx]:
+                        max_degrees[idx] = degree
+            f.write("  \"max_degree\": [")
+            for degree in max_degrees:
+                f.write(str(degree) + ", ")
+            f.write("]")
             f.write("}\n")
         return data_point_idx + 1
     else:
