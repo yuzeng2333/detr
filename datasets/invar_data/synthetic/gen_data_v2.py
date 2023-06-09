@@ -2,12 +2,13 @@ import random
 import sympy
 import os
 from sympy.parsing.sympy_parser import parse_expr
+from collections import Counter
 
 # this file is used to generate a dataset for invariance training
 
 RUN_REAL = True
 PRINT_SEPARATELY = True
-EXPERIMENT_TO_RUN = 10
+EXPERIMENT_TO_RUN = 1
 
 MAX_DEGREE = 2
 MAX_VAR_NUM = 3
@@ -346,6 +347,43 @@ class Stats:
 
     def analyze_sol(self, sol_list):
         self.stats_sol_num.append(sol_list.__len__())
+    
+    def print_expr_num_dist(self):
+        count = Counter(self.stats_expr_num)
+        for number, frequency in sorted(count.items()):
+            print(f"{number}: {'*' * frequency}")
+
+    def print_item_num_dist(self):
+        count = Counter(self.stats_item_num)
+        for number, frequency in sorted(count.items()):
+            print(f"{number}: {'*' * frequency}")
+
+    def print_var_num_dist(self):
+        count = Counter(self.stats_var_num)
+        for number, frequency in sorted(count.items()):
+            print(f"{number}: {'*' * frequency}")
+
+    def print_max_degree_dist(self):
+        count = Counter(self.stats_max_degree)
+        for number, frequency in sorted(count.items()):
+            print(f"{number}: {'*' * frequency}")
+
+    def print_sol_num_dist(self):
+        count = Counter(self.stats_sol_num)
+        for number, frequency in sorted(count.items()):
+            print(f"{number}: {'*' * frequency}")
+
+    def print_stats(self):
+        print("expr num: ")
+        self.print_expr_num_dist()
+        print("item num: ")
+        self.print_item_num_dist()
+        print("var num: ")
+        self.print_var_num_dist()
+        print("max degree: ")
+        self.print_max_degree_dist()
+        print("sol num: ")
+        self.print_sol_num_dist()
 
 # the program begins here
 # declare the variables
@@ -472,8 +510,11 @@ while data_point_num < EXPERIMENT_TO_RUN:
                 print(sol)
             sol_list.append(sol)
 
+    stats.analyze_sol(sol_list)
     if PRINT_SEPARATELY == True:
         # print the result to a separate file
         data_point_idx = print_result_to_separate_file(expr_list, sol_list, data_point_idx)
     else:
         data_point_idx = print_result_to_single_file(expr_list, sol_list, data_point_idx)
+
+stats.print_stats()
