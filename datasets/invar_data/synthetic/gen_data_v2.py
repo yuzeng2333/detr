@@ -5,8 +5,9 @@ from sympy.parsing.sympy_parser import parse_expr
 
 # this file is used to generate a dataset for invariance training
 
-RUN_REAL = False
+RUN_REAL = True
 PRINT_SEPARATELY = True
+EXPERIMENT_TO_RUN = 10
 
 MAX_DEGREE = 2
 MAX_VAR_NUM = 3
@@ -19,12 +20,11 @@ else:
 CONST_MAX = 512
 X_MAX = 32 
 if RUN_REAL:
-    MIN_SOL_NUM = 100
+    MIN_SOL_NUM = MAX_EXPR_NUM / 4
 else:
     MIN_SOL_NUM = 3
 ENABLE_INEQ = False
-EXPERIMENT_TO_RUN = 5
-
+PRINT_SOL = False
 
 assert SOL_NUM >= MIN_SOL_NUM
 
@@ -100,7 +100,7 @@ def check_imaginary(sol_list):
 
 def get_expr_list():
     expr_list = []
-    # var_list is a set of indices of variables
+    # var_set is a set of indices of variables
     var_set = set()
     expr_num = random.randint(1, MAX_EXPR_NUM)
     for i in range(expr_num):
@@ -130,7 +130,7 @@ def get_expr_list():
             if sum(degree_list) == 0:
                 idx = random.randint(0, MAX_VAR_NUM - 1)
                 degree_list[idx] = 1
-            # add indices whose degree is non-zero to the var_list
+            # add indices whose degree is non-zero to the var_set
             for idx, degree in enumerate(degree_list):
                 if degree != 0:
                     var_set.add(idx)
@@ -321,12 +321,35 @@ def print_result_to_separate_file(expr_list, sol_list, data_point_idx):
     else:
         return -1
 
+
+class Stats:
+    def __init__(self):        
+        self.stats_expr_num = []
+        self.stats_item_num = []
+        self.stats_var_num = []
+        self.stats_max_degree = []
+        self.stats_sol_num = []
+
+    def analyze_expr(self, expr_list):
+        self.stats_expr_num.append(expr_list.__len__())
+        for expr in expr_list:
+            self.stats_item_num.append(expr.item_list.__len__())
+            max_degree = 0
+            for item in expr.item_list:
+                for degree in item.degree_list:
+                    if degree > max_degree:
+                        max_degree = degree
+            self.stats_max_degree.append(max_degree)
+
+    def analyze_var(self, var_set):
+        self.stats_var_num.append(var_set.__len__())
+
+    def analyze_sol(self, sol_list):
+        self.stats_sol_num.append(sol_list.__len__())
+
 # the program begins here
 # declare the variables
 x, y, z = sympy.symbols("x y z")
-
-
-
 
 # before run, check if the file exists: equations.txt solutions.txt poly_labels.txt
 # if only some of them exist, delete them and regenerate them
@@ -348,12 +371,15 @@ if os.path.exists("equations.txt") == True and all_exist == False:
 data_point_num = 0
 data_point_idx = 0
 MAX_DIGIT_WIDTH = 8
+stats = Stats()
 # 16 is the number of data points (a set of equations and inequalities)
 #  we want to generate
 while data_point_num < EXPERIMENT_TO_RUN: 
     print("data point number: " + str(data_point_num))
     data_point_num += 1
     expr_list, var_set = get_expr_list()
+    stats.analyze_expr(expr_list)
+    stats.analyze_var(var_set)
     expr_num = expr_list.__len__()
     # w_list stores the variables on the RHS of the equations
     w_list = []
@@ -367,7 +393,7 @@ while data_point_num < EXPERIMENT_TO_RUN:
     while sol_list.__len__() < SOL_NUM:
         run_num += 1
         #print("run number: " + str(run_num))
-        if run_num > 1000:
+        if run_num > 2 * SOL_NUM:
             break
         equations = []
         max_xyz = 0
@@ -442,12 +468,12 @@ while data_point_num < EXPERIMENT_TO_RUN:
         if all_pass == True:
             # append the solution to the list
             sol_num = sol_list.__len__()
-            #print("solution found: " + str(sol_num))
-            print(sol)
+            if PRINT_SOL == True:
+                print(sol)
             sol_list.append(sol)
 
-        if PRINT_SEPARATELY == True:
-            # print the result to a separate file
-            data_point_idx = print_result_to_separate_file(expr_list, sol_list, data_point_idx)
-        else:
-            data_point_idx = print_result_to_single_file(expr_list, sol_list, data_point_idx)
+    if PRINT_SEPARATELY == True:
+        # print the result to a separate file
+        data_point_idx = print_result_to_separate_file(expr_list, sol_list, data_point_idx)
+    else:
+        data_point_idx = print_result_to_single_file(expr_list, sol_list, data_point_idx)
