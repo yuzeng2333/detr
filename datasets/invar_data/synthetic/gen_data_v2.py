@@ -6,7 +6,7 @@ from collections import Counter
 
 # this file is used to generate a dataset for invariance training
 
-RUN_REAL = True
+RUN_REAL = False
 PRINT_SEPARATELY = True
 EXPERIMENT_TO_RUN = 10
 
@@ -91,9 +91,11 @@ class SingleExpr:
             print(self.str + " < " + str(self.const))
 
     def get_max_degrees(self):
-        max_degrees = [0, 0, 0, 0, 0]
+        max_degrees = [0, 0, 0]
         for item in self.item_list:
-            assert len(item.degree_list) == len(max_degrees)
+            if len(item.degree_list) != len(max_degrees):
+                print("Error: degree_list length not equal to max_degrees length")
+                assert len(item.degree_list) == len(max_degrees)
             max_degrees = [max(x, y) for x, y in zip(max_degrees, item.degree_list)]
         return max_degrees
 
@@ -325,16 +327,17 @@ def print_result_to_separate_file(expr_list, sol_list, data_point_idx):
                     f.write("],\n")
             f.write("  ],\n")
             # print the max degree for each variable
-            max_degrees = [0, 0, 0, 0, 0]
+            max_degrees = [0, 0, 0]
             for expr in expr_list:
-                one_max_degrees = expr.get_max_degree()
+                one_max_degrees = expr.get_max_degrees()
                 for idx, degree in enumerate(one_max_degrees):
                     if degree > max_degrees[idx]:
                         max_degrees[idx] = degree
             f.write("  \"max_degree\": [")
             for degree in max_degrees:
                 f.write(str(degree) + ", ")
-            f.write("]")
+            # add degrees for w0 and w1
+            f.write("1, 1]\n")
             f.write("}\n")
         return data_point_idx + 1
     else:
