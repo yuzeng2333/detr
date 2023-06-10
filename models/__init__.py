@@ -1,6 +1,12 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
-from .invar_detr import build
+from .invar_detr import build_detr
+from ..simple_models.build import build_dnn_model
 
 
 def build_model(args):
-    return build(args)
+    if args.sel_model == 'detr':
+        return build_detr(args)
+    elif args.sel_model == 'dnn':
+        return build_dnn_model(args)
+    else:
+        raise ValueError(f"Unrecognized model '{args.sel_model}'")

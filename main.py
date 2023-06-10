@@ -29,6 +29,7 @@ def get_args_parser():
                         help='gradient clipping max norm')
 
     # Model parameters
+    parser.add_argument('--sel_model', type=str, default='detr', help='select model')
     parser.add_argument('--frozen_weights', type=str, default=None,
                         help="Path to the pretrained model. If set, only the mask head will be trained")
     # * Backbone
@@ -119,7 +120,7 @@ def main(args):
     np.random.seed(seed)
     random.seed(seed)
 
-    model, criterion, postprocessors, count_accuracy = build_model(args)
+    model, criterion, count_accuracy = build_model(args)
     model.to(device)
 
     model_without_ddp = model

@@ -420,7 +420,7 @@ class MLP(nn.Module):
         return x
 
 
-def build(args):
+def build_detr(args):
     # the `num_classes` naming here is somewhat misleading.
     # it indeed corresponds to `max_obj_id + 1`, where max_obj_id
     # is the maximum id for a class in your dataset. For example,
@@ -477,4 +477,5 @@ def build(args):
             is_thing_map = {i: i <= 90 for i in range(201)}
             postprocessors["panoptic"] = PostProcessPanoptic(is_thing_map, threshold=0.85)
 
-    return model, criterion, postprocessors, count_accuracy
+    #return model, criterion, postprocessors, count_accuracy
+    return model, criterion, count_accuracy
