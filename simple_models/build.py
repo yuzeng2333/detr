@@ -5,6 +5,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 def build_dnn_model(args):
-    model = DNN()
+    model = DNN(args.max_var_num)
     criterion = F.cross_entropy
     return model, criterion, count_accuracy
