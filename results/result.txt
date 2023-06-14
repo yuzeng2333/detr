@@ -1,0 +1,2 @@
+training data: 190, layer: 2, avg_accuracy: 7.05
+training data: 190, layer: 3, avg_accuracy: 6.6
