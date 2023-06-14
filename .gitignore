@@ -11,6 +11,9 @@ datasets/data/
 datasets/invar_data/synthetic/data
 datasets/invar_data/synthetic/label
 datasets/invar_data/synthetic/equations
+datasets/invar_data/synthetic/val_data
+datasets/invar_data/synthetic/val_label
+datasets/invar_data/synthetic/val_equations
 experiment-*
 *.tmp
 *.pkl
@@ -19,5 +22,5 @@ experiment-*
 not_tracked_dir/
 .vscode
 .history
-./datasets/invar_data/synthetic
 ./datasets/invar_data/synthetic_short
+

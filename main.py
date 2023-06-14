@@ -13,7 +13,7 @@ from torch.utils.data import DataLoader, DistributedSampler
 import datasets
 import util.misc as utils
 from datasets import build_dataset 
-from engine import evaluate, train_invar
+from engine import train_invar, evaluate_max_degree
 from models import build_model
 from util.misc import custom_collate_fn as collate_fn
 
@@ -21,7 +21,7 @@ def get_args_parser():
     parser = argparse.ArgumentParser('Set transformer detector', add_help=False)
     parser.add_argument('--lr', default=1e-4, type=float)
     parser.add_argument('--lr_backbone', default=1e-5, type=float)
-    parser.add_argument('--batch_size', default=2, type=int)
+    parser.add_argument('--batch_size', default=1, type=int)
     parser.add_argument('--weight_decay', default=1e-4, type=float)
     parser.add_argument('--epochs', default=300, type=int)
     parser.add_argument('--lr_drop', default=200, type=int)
@@ -30,6 +30,7 @@ def get_args_parser():
 
     # Model parameters
     parser.add_argument('--sel_model', type=str, default='detr', help='select model')
+    parser.add_argument('--max_var_num', type=int, default=5)
     parser.add_argument('--frozen_weights', type=str, default=None,
                         help="Path to the pretrained model. If set, only the mask head will be trained")
     # * Backbone
@@ -182,7 +183,7 @@ def main(args):
 
     print("Start training")
     train_invar(model, data_loader_train, criterion, optimizer, device)
-    evaluate(model, data_loader_val, count_accuracy, device=device)
+    evaluate_max_degree(model, data_loader_val, count_accuracy, device=device)
     start_time = time.time()
     
 

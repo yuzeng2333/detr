@@ -161,31 +161,35 @@ def train_invar(model, dataloader, criterion, optimizer, device):
     for i in range(iteration):
     #for i in range(2):
         print("Iteration: ", i)
+        batch_idx = 0
         for batch in dataloader:
+            print("batch:", batch_idx)
+            batch_idx += 1
             inputs, targets, masks = batch
             inputs = inputs.to(device)
 
             optimizer.zero_grad()
             outputs = model(inputs, masks)
             #loss = criterion(outputs.view(-1, outputs.size(-1)), targets.view(-1))
-            loss = criterion(outputs, targets)
+            losses = criterion(outputs, targets)
             # print loss and iteration numbers
             if(print_loss == 1):
-                print("Loss: ", loss.item())
+                print("Loss: ", losses.item())
             if print_outputs == 1:
                 print("outputs: ", outputs)
             # print the weights
             if print_weights == 1:
                 print("weights: ", model.fc.weight)
             # stop if loss is nan
-            if torch.isnan(outputs['eq']).any() or torch.isnan(outputs['op']).any():        
-                print("Found NaN at index")
-                return
-            total_loss = sum(loss for loss in loss.values())
+            #if torch.isnan(outputs['eq']).any() or torch.isnan(outputs['op']).any():        
+            #    print("Found NaN at index")
+            #    return
+            total_loss = sum(loss for loss in losses.values())
             # print the all kinds of losses
             #print("loss: ", loss)
             # print loss_eq, loss_op and total_loss in a form
-            print("{:<10.2f} {:<10.2f} {:<10.2f}".format(loss['loss_eq'].item(), loss['loss_op'].item(), total_loss.item()))
+            #print("{:<10.2f} {:<10.2f} {:<10.2f}".format(loss['loss_eq'].item(), loss['loss_op'].item(), total_loss.item()))
+            print("{:<10.2f}".format(losses['loss'].item()))
             #print("Eq loss: ", loss['loss_eq'].item())
             #print("Op loss: ", loss['loss_op'].item())
             #print("Total loss: ", total_loss.item())
@@ -193,7 +197,7 @@ def train_invar(model, dataloader, criterion, optimizer, device):
             optimizer.step()
 
 
-def evaluate(model, dataloader, count_accuracy, device):
+def evaluate_op_eq(model, dataloader, count_accuracy, device):
     model.eval()  # Put the model in evaluation mode
     all_eq_accuracy = []
     all_op_accuracy = []
@@ -216,3 +220,22 @@ def evaluate(model, dataloader, count_accuracy, device):
     avg_op_accuracy = sum(all_op_accuracy) / len(all_op_accuracy)
     print("avg_eq_accuracy: ", avg_eq_accuracy)
     print("avg_op_accuracy: ", avg_op_accuracy)
+
+def evaluate_max_degree(model, dataloader, count_accuracy, device):
+    model.eval()  # Put the model in evaluation mode
+    all_degree_accuracy = []
+
+    # We don't need to update the model parameters, so we use torch.no_grad() 
+    with torch.no_grad():
+        for batch in dataloader:
+            inputs, targets, masks = batch
+            inputs = inputs.to(device)
+
+            outputs = model(inputs, masks)
+            degree_accuracy = count_accuracy(outputs, targets)
+            all_degree_accuracy.append(degree_accuracy)
+            # print the two accuracies
+            print("degree_accuracy: ", degree_accuracy)
+    
+    avg_degree_accuracy = sum(all_degree_accuracy) / len(all_degree_accuracy)
+    print("avg_eq_accuracy: ", avg_degree_accuracy)

@@ -15,7 +15,7 @@ from torch.utils.data import Dataset
 import json
 import numpy as np
 
-def ReadInvarianceData(data_folder, label_folder, filenames):
+def ReadInvarianceData(data_folder, label_folder, filenames, max_var_num):
     # if filenames is None, read all files in data_folder
     # find all the file names in data_folder
     if not filenames:
@@ -26,7 +26,7 @@ def ReadInvarianceData(data_folder, label_folder, filenames):
                 filename_without_suffix = filename.split('.')[0]
                 filenames.append(filename_without_suffix)
     # map from file name to the list of iloc
-    MAX_VAR_NUM = 6
+    MAX_VAR_NUM = max_var_num
     batch_mask = torch.tensor([]) # shape: (num_files, MAX_VAR_NUM)
     var_names = {}
     batch_data = [] # shape: (num_files, MAX_VAR_NUM, 512)
@@ -95,8 +95,8 @@ def ReadInvarianceData(data_folder, label_folder, filenames):
                     
 
 class InvarianceDateSet(Dataset):
-    def __init__(self, data_folder, label_folder, filenames):
-        data, mask, label = ReadInvarianceData(data_folder, label_folder, filenames)
+    def __init__(self, data_folder, label_folder, filenames, max_var_num):
+        data, mask, label = ReadInvarianceData(data_folder, label_folder, filenames, max_var_num)
         self.data = data
         self.mask = mask
         self.label = label
@@ -112,6 +112,7 @@ class InvarianceDateSet(Dataset):
 
 def build(image_set, args):
     root = Path(args.invar_path)
+    max_var_num = args.max_var_num
     assert root.exists(), f'provided invariance data path {root} does not exist'
     PATHS = {
         "train": (root / "data", root / "label"),
@@ -122,5 +123,5 @@ def build(image_set, args):
     # currently only load the data for ps2
     #file_names = ["ps2", "ps3", "ps4_1", "ps5_1", "ps6_1", "sqrt1_1"]
     file_names = []
-    dataset = InvarianceDateSet(data_folder, label_folder, file_names)
+    dataset = InvarianceDateSet(data_folder, label_folder, file_names, max_var_num)
     return dataset
