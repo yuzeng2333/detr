@@ -1,6 +1,9 @@
 all:
 	python gen_data_v2.py
 
+val: 
+	python gen_data_v2.py --val
+
 dbg:
 	python -m pdb gen_data_v2.py
 
