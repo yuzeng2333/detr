@@ -29,4 +29,4 @@ trial-dbg:
 	python -m pdb main.py --trial --num_iterations 2 --sel_model transformer --invar_path /home/yuzeng/workspace/research/inv_gen/detr/datasets/invar_data/synthetic
 
 gpu:
-	python main.py --device gpu --sel_model transformer --invar_path /home/yuzeng/workspace/research/inv_gen/detr/datasets/invar_data/synthetic
+	python main.py --device cuda --sel_model transformer --invar_path /home/yuzeng/workspace/research/inv_gen/detr/datasets/invar_data/synthetic
