@@ -23,4 +23,8 @@ tran:
 	python main.py --sel_model transformer --invar_path /home/yuzeng/workspace/research/inv_gen/detr/datasets/invar_data/synthetic
 
 trial:
-	python main.py --trial --num_iterations 10 --sel_model transformer --invar_path /home/yuzeng/workspace/research/inv_gen/detr/datasets/invar_data/synthetic
+	python main.py --trial --num_iterations 2 --sel_model transformer --invar_path /home/yuzeng/workspace/research/inv_gen/detr/datasets/invar_data/synthetic
+
+trial-dbg:
+	python -m pdb main.py --trial --num_iterations 2 --sel_model transformer --invar_path /home/yuzeng/workspace/research/inv_gen/detr/datasets/invar_data/synthetic
+

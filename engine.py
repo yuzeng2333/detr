@@ -262,6 +262,10 @@ def merge_wrong_values(all_wrong_values, wrong_values):
 
 
 def print_analysis_results(all_wrong_positions, all_wrong_values):
+    # flatten all_wrong_positions
+    all_wrong_positions = [item for sublist in all_wrong_positions for item in sublist]
+    # apply mod 5 to all elements in all_wrong_positions
+    all_wrong_positions = [x % 5 for x in all_wrong_positions]
     count = Counter(all_wrong_positions)
     print("Wrong positions: ")
     for number, frequency in sorted(count.items()):
@@ -269,7 +273,8 @@ def print_analysis_results(all_wrong_positions, all_wrong_values):
     print("Wrong values: ")
     for key in all_wrong_values.keys():
         print("== key: ", key)
-        count = Counter(all_wrong_values[key])
+        all_wrong_value_list = [item for sublist in all_wrong_values[key] for item in (sublist if isinstance(sublist, list) else [sublist])]
+        count = Counter(all_wrong_value_list)
         for number, frequency in sorted(count.items()):
             print(f"{number}: {'*' * frequency}")
 
@@ -294,5 +299,5 @@ def evaluate_max_degree(model, dataloader, count_accuracy, device):
             print("degree_accuracy: ", degree_accuracy)
     
     avg_degree_accuracy = sum(all_degree_accuracy) / len(all_degree_accuracy)
-    print("avg_eq_accuracy: ", avg_degree_accuracy)
+    print("avg_degree_accuracy: ", avg_degree_accuracy)
     print_analysis_results(all_wrong_positions, all_wrong_values)
