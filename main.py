@@ -28,6 +28,7 @@ def get_args_parser():
     parser.add_argument('--clip_max_norm', default=0.1, type=float,
                         help='gradient clipping max norm')
     parser.add_argument('--trial', action='store_true', help='if true, run a trial')
+    parser.add_argument('--num_iterations', default=60, type=int)
 
     # Model parameters
     parser.add_argument('--sel_model', type=str, default='detr', help='select model')
@@ -183,7 +184,7 @@ def main(args):
     #    return
 
     print("Start training")
-    train_invar(model, data_loader_train, criterion, optimizer, device, args.max_var_num)
+    train_invar(model, data_loader_train, criterion, optimizer, device, args)
     evaluate_max_degree(model, data_loader_val, count_accuracy, device=device)
     start_time = time.time()
     

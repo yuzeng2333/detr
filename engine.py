@@ -152,10 +152,11 @@ def evaluate_old(model, criterion, postprocessors, data_loader, base_ds, device,
     return stats, coco_evaluator
 
 
-def train_invar(model, dataloader, criterion, optimizer, device, max_var_num):
+def train_invar(model, dataloader, criterion, optimizer, device, args):
     model.train()
-    iteration = 60
+    iteration = args.num_iterations
     permute_num = 6
+    max_var_num = args.max_var_num
 
     reference_perm = list(range(0, max_var_num))
     permutations = []
