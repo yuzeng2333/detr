@@ -27,6 +27,7 @@ def get_args_parser():
     parser.add_argument('--lr_drop', default=200, type=int)
     parser.add_argument('--clip_max_norm', default=0.1, type=float,
                         help='gradient clipping max norm')
+    parser.add_argument('--trial', action='store_true', help='if true, run a trial')
 
     # Model parameters
     parser.add_argument('--sel_model', type=str, default='detr', help='select model')
@@ -142,7 +143,7 @@ def main(args):
                                   weight_decay=args.weight_decay)
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, args.lr_drop)
 
-    dataset_train = build_dataset(image_set='train', args=args)
+    dataset_train = build_dataset(image_set='trial', args=args) if args.trial else build_dataset(image_set='train', args=args)
     dataset_val = build_dataset(image_set='val', args=args)
 
     batch_size = 2

@@ -21,3 +21,6 @@ dbg:
 
 tran:
 	python main.py --sel_model transformer --invar_path /home/yuzeng/workspace/research/inv_gen/detr/datasets/invar_data/synthetic
+
+trial:
+	python main.py --trial --sel_model transformer --invar_path /home/yuzeng/workspace/research/inv_gen/detr/datasets/invar_data/synthetic

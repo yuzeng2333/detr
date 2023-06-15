@@ -13,6 +13,7 @@ import util.misc as utils
 from datasets.panoptic_eval import PanopticEvaluator
 import random
 from itertools import permutations
+from collections import Counter
 
 def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
                     data_loader: Iterable, optimizer: torch.optim.Optimizer,
@@ -246,10 +247,37 @@ def evaluate_op_eq(model, dataloader, count_accuracy, device):
     print("avg_eq_accuracy: ", avg_eq_accuracy)
     print("avg_op_accuracy: ", avg_op_accuracy)
 
+
+def merge_wrong_positions(all_wrong_positions, wrong_positions):
+    all_wrong_positions.append(wrong_positions)
+
+
+def merge_wrong_values(all_wrong_values, wrong_values):
+    for key in wrong_values.keys():
+        if key in all_wrong_values.keys():
+            all_wrong_values[key].append(wrong_values[key])
+        else:
+            all_wrong_values[key] = wrong_values[key]
+
+
+def print_analysis_results(all_wrong_positions, all_wrong_values):
+    count = Counter(all_wrong_positions)
+    print("Wrong positions: ")
+    for number, frequency in sorted(count.items()):
+        print(f"{number}: {'*' * frequency}")
+    print("Wrong values: ")
+    for key in all_wrong_values.keys():
+        print("== key: ", key)
+        count = Counter(all_wrong_values[key])
+        for number, frequency in sorted(count.items()):
+            print(f"{number}: {'*' * frequency}")
+
+
 def evaluate_max_degree(model, dataloader, count_accuracy, device):
     model.eval()  # Put the model in evaluation mode
     all_degree_accuracy = []
-
+    all_wrong_positions = []
+    all_wrong_values = {}
     # We don't need to update the model parameters, so we use torch.no_grad() 
     with torch.no_grad():
         for batch in dataloader:
@@ -257,10 +285,13 @@ def evaluate_max_degree(model, dataloader, count_accuracy, device):
             inputs = inputs.to(device)
 
             outputs = model(inputs, masks)
-            degree_accuracy = count_accuracy(outputs, targets)
+            degree_accuracy, wrong_positions, wrong_values = count_accuracy(outputs, targets)
+            merge_wrong_positions(all_wrong_positions, wrong_positions)
+            merge_wrong_values(all_wrong_values, wrong_values)
             all_degree_accuracy.append(degree_accuracy)
             # print the two accuracies
             print("degree_accuracy: ", degree_accuracy)
     
     avg_degree_accuracy = sum(all_degree_accuracy) / len(all_degree_accuracy)
     print("avg_eq_accuracy: ", avg_degree_accuracy)
+    print_analysis_results(all_wrong_positions, all_wrong_values)

@@ -117,6 +117,7 @@ def build(image_set, args):
     PATHS = {
         "train": (root / "data", root / "label"),
         "val": (root / "val_data", root / "val_label"),
+        "trial": (root / "trial_data", root / "trial_label"),
     }
 
     data_folder, label_folder = PATHS[image_set]
