@@ -152,7 +152,7 @@ def evaluate_old(model, criterion, postprocessors, data_loader, base_ds, device,
     return stats, coco_evaluator
 
 
-def train_invar(model, dataloader, criterion, optimizer, device, args):
+def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, optimizer, device, args):
     param_file = args.save_path
     # if the saved parameters exist, load it
     if os.path.isfile(param_file):
@@ -227,6 +227,7 @@ def train_invar(model, dataloader, criterion, optimizer, device, args):
                 optimizer.step()
             average_loss = sum(loss_list) / len(loss_list)
             print("Average loss: ", average_loss)
+        evaluate_max_degree(model, eval_dataloader, count_accuracy, device, False)
     # save the parameters
     torch.save(model.state_dict(), param_file)
 
@@ -286,7 +287,7 @@ def print_analysis_results(all_wrong_positions, all_wrong_values):
             print(f"{number}: {'*' * frequency}")
 
 
-def evaluate_max_degree(model, dataloader, count_accuracy, device):
+def evaluate_max_degree(model, dataloader, count_accuracy, device, verbose=False):
     model.eval()  # Put the model in evaluation mode
     all_degree_accuracy = []
     all_wrong_positions = []
@@ -303,7 +304,8 @@ def evaluate_max_degree(model, dataloader, count_accuracy, device):
             merge_wrong_values(all_wrong_values, wrong_values)
             all_degree_accuracy.append(degree_accuracy)
             # print the two accuracies
-            print("degree_accuracy: ", degree_accuracy)
+            if verbose:
+                print("degree_accuracy: ", degree_accuracy)
     
     avg_degree_accuracy = sum(all_degree_accuracy) / len(all_degree_accuracy)
     print("avg_degree_accuracy: ", avg_degree_accuracy)

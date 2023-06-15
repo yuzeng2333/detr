@@ -185,7 +185,7 @@ def main(args):
     #    return
 
     print("Start training")
-    train_invar(model, data_loader_train, criterion, optimizer, device, args)
+    train_invar(model, data_loader_train, data_loader_val, count_accuracy, criterion, optimizer, device, args)
     evaluate_max_degree(model, data_loader_val, count_accuracy, device=device)
     start_time = time.time()
     
