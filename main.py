@@ -29,6 +29,7 @@ def get_args_parser():
                         help='gradient clipping max norm')
     parser.add_argument('--trial', action='store_true', help='if true, run a trial')
     parser.add_argument('--num_iterations', default=60, type=int)
+    parser.add_argument('--save_path', default='model_parameters.pth', type=str)
 
     # Model parameters
     parser.add_argument('--sel_model', type=str, default='detr', help='select model')

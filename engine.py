@@ -153,6 +153,11 @@ def evaluate_old(model, criterion, postprocessors, data_loader, base_ds, device,
 
 
 def train_invar(model, dataloader, criterion, optimizer, device, args):
+    param_file = args.save_path
+    # if the saved parameters exist, load it
+    if os.path.isfile(param_file):
+        print("Loading saved parameters...")
+        model.load_state_dict(torch.load(param_file))
     model.train()
     iteration = args.num_iterations
     permute_num = 6
@@ -222,6 +227,8 @@ def train_invar(model, dataloader, criterion, optimizer, device, args):
                 optimizer.step()
             average_loss = sum(loss_list) / len(loss_list)
             print("Average loss: ", average_loss)
+    # save the parameters
+    torch.save(model.state_dict(), param_file)
 
 
 def evaluate_op_eq(model, dataloader, count_accuracy, device):
