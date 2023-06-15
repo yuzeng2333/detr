@@ -11,7 +11,8 @@ import torch
 
 import util.misc as utils
 from datasets.panoptic_eval import PanopticEvaluator
-
+import random
+from itertools import permutations
 
 def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
                     data_loader: Iterable, optimizer: torch.optim.Optimizer,
@@ -150,9 +151,18 @@ def evaluate_old(model, criterion, postprocessors, data_loader, base_ds, device,
     return stats, coco_evaluator
 
 
-def train_invar(model, dataloader, criterion, optimizer, device):
+def train_invar(model, dataloader, criterion, optimizer, device, max_var_num):
     model.train()
-    iteration = 20
+    iteration = 60
+    permute_num = 6
+
+    reference_perm = list(range(0, max_var_num))
+    permutations = []
+    while len(permutations) < permute_num:
+        perm = random.sample(reference_perm, len(reference_perm))
+        if perm != reference_perm:
+            permutations.append(perm)
+
     print_loss = 0
     print_outputs = 0
     print_weights = 0            
@@ -162,39 +172,54 @@ def train_invar(model, dataloader, criterion, optimizer, device):
     #for i in range(2):
         print("Iteration: ", i)
         batch_idx = 0
-        for batch in dataloader:
-            print("batch:", batch_idx)
-            batch_idx += 1
-            inputs, targets, masks = batch
-            inputs = inputs.to(device)
+        loss_list = []
+        for perm_idx in range(permute_num):
+            dim_size = max_var_num
+            perm_list = permutations[perm_idx]
+            perm = torch.tensor(perm_list)
+            for batch in dataloader:
+                #print("batch:", batch_idx)
+                batch_idx += 1
+                inputs, targets, masks = batch
+                if perm_idx > 0:
+                    inputs = inputs[:, perm]
+                    for target in targets:
+                        degree_list = target['max_degree']
+                        rearranged_list = [degree_list[i] for i in perm_list]
+                        target['max_degree'] = rearranged_list
+                    masks = masks[:, perm]
+                inputs = inputs.to(device)
 
-            optimizer.zero_grad()
-            outputs = model(inputs, masks)
-            #loss = criterion(outputs.view(-1, outputs.size(-1)), targets.view(-1))
-            losses = criterion(outputs, targets)
-            # print loss and iteration numbers
-            if(print_loss == 1):
-                print("Loss: ", losses.item())
-            if print_outputs == 1:
-                print("outputs: ", outputs)
-            # print the weights
-            if print_weights == 1:
-                print("weights: ", model.fc.weight)
-            # stop if loss is nan
-            #if torch.isnan(outputs['eq']).any() or torch.isnan(outputs['op']).any():        
-            #    print("Found NaN at index")
-            #    return
-            total_loss = sum(loss for loss in losses.values())
-            # print the all kinds of losses
-            #print("loss: ", loss)
-            # print loss_eq, loss_op and total_loss in a form
-            #print("{:<10.2f} {:<10.2f} {:<10.2f}".format(loss['loss_eq'].item(), loss['loss_op'].item(), total_loss.item()))
-            print("{:<10.2f}".format(losses['loss'].item()))
-            #print("Eq loss: ", loss['loss_eq'].item())
-            #print("Op loss: ", loss['loss_op'].item())
-            #print("Total loss: ", total_loss.item())
-            total_loss.backward()
-            optimizer.step()
+                optimizer.zero_grad()
+                outputs = model(inputs, masks)
+                #loss = criterion(outputs.view(-1, outputs.size(-1)), targets.view(-1))
+                losses = criterion(outputs, targets)
+                # print loss and iteration numbers
+                if(print_loss == 1):
+                    print("Loss: ", losses.item())
+                if print_outputs == 1:
+                    print("outputs: ", outputs)
+                # print the weights
+                if print_weights == 1:
+                    print("weights: ", model.fc.weight)
+                # stop if loss is nan
+                #if torch.isnan(outputs['eq']).any() or torch.isnan(outputs['op']).any():        
+                #    print("Found NaN at index")
+                #    return
+                total_loss = sum(loss for loss in losses.values())
+                # print the all kinds of losses
+                #print("loss: ", loss)
+                # print loss_eq, loss_op and total_loss in a form
+                #print("{:<10.2f} {:<10.2f} {:<10.2f}".format(loss['loss_eq'].item(), loss['loss_op'].item(), total_loss.item()))
+                #print("{:<10.2f}".format(losses['loss'].item()))
+                #print("Eq loss: ", loss['loss_eq'].item())
+                #print("Op loss: ", loss['loss_op'].item())
+                #print("Total loss: ", total_loss.item())
+                loss_list.append(total_loss.item())
+                total_loss.backward()
+                optimizer.step()
+            average_loss = sum(loss_list) / len(loss_list)
+            print("Average loss: ", average_loss)
 
 
 def evaluate_op_eq(model, dataloader, count_accuracy, device):

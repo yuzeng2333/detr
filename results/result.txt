@@ -1,2 +1,4 @@
 training data: 190, layer: 2, avg_accuracy: 7.05
 training data: 190, layer: 3, avg_accuracy: 6.6
+training data: 1190, layer: 3, iteration: 20, avg_accuracy: 6.95
+training data: 1190, layer: 3, iteration: 60, avg_accuracy: 6.7
