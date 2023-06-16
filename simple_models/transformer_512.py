@@ -17,8 +17,10 @@ class TransformerV2(nn.Module):
         self.classifier = nn.Linear(d_model, d_model * num_classes)
 
     def forward(self, src, masks):
+        # exchange the 2rd and 3rd dimension
+        src = src.transpose(1, 2)
         output = self.transformer_encoder(src)
-        output = output.mean(dim=0)
+        output = output.mean(dim=1)
         output = self.classifier(output)
         # reshape the output to (batch_size, d_model, num_classes)
         output = output.reshape(output.shape[0], self.d_model, self.num_classes)

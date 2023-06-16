@@ -13,7 +13,7 @@ def build_dnn_model(args):
     return model, criterion, count_accuracy
 
 def build_transformer_model(args):
-    #model = TransformerV2()
-    model = MyTransformer()
+    model = TransformerV2()
+    #model = MyTransformer()
     criterion = DNN_CROSS_ENTROPY()
     return model, criterion, count_accuracy
