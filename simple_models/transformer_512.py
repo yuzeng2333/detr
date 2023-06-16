@@ -2,7 +2,7 @@ import torch
 from torch import nn
 
 class TransformerV2(nn.Module):
-    def __init__(self, d_model=5, nhead=1, num_layers=3, num_classes=3):
+    def __init__(self, d_model=5, nhead=1, num_layers=6, num_classes=3):
         super(TransformerV2, self).__init__()
         self.d_model = d_model
         self.nhead = nhead
