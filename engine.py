@@ -227,7 +227,8 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
                 optimizer.step()
             average_loss = sum(loss_list) / len(loss_list)
             print("Average loss: ", average_loss)
-        evaluate_max_degree(model, eval_dataloader, count_accuracy, device, False)
+        if i % 10 == 0:
+            evaluate_max_degree(model, eval_dataloader, count_accuracy, device, False)
     # save the parameters
     torch.save(model.state_dict(), param_file)
 
@@ -309,4 +310,5 @@ def evaluate_max_degree(model, dataloader, count_accuracy, device, verbose=False
     
     avg_degree_accuracy = sum(all_degree_accuracy) / len(all_degree_accuracy)
     print("avg_degree_accuracy: ", avg_degree_accuracy)
-    print_analysis_results(all_wrong_positions, all_wrong_values)
+    if verbose:
+        print_analysis_results(all_wrong_positions, all_wrong_values)
