@@ -110,6 +110,32 @@ def check_imaginary(sol_list):
     return False
 
 
+def create_degree_list():
+    degree_list = []
+    # determine the variables in this item and their degrees
+    for k in range(MAX_VAR_NUM):
+        var_not_included = random.randint(0, 1)
+        if var_not_included == 1:
+            degree_list.append(0)
+        else:
+            single_degree = random.randint(0, degree)
+            degree_list.append(single_degree)
+            degree = degree - single_degree
+    # if the degree_list are all 0, set a random variable to 1
+    if sum(degree_list) == 0:
+        idx = random.randint(0, MAX_VAR_NUM - 1)
+        degree_list[idx] = 1
+    return degree_list
+
+
+def create_simple_degree_list():
+    res = random.randint(1, 2)
+    if res == 1:
+      return [1]
+    else:
+      return [2]
+
+
 def get_expr_list():
     expr_list = []
     # var_set is a set of indices of variables
@@ -128,20 +154,8 @@ def get_expr_list():
             # determine the degree of the item
             degree = random.randint(1, MAX_DEGREE)
             coeff = random.randint(1, 10)
-            degree_list = []
-            # determine the variables in this item and their degrees
-            for k in range(MAX_VAR_NUM):
-                var_not_included = random.randint(0, 1)
-                if var_not_included == 1:
-                    degree_list.append(0)
-                else:
-                    single_degree = random.randint(0, degree)
-                    degree_list.append(single_degree)
-                    degree = degree - single_degree
-            # if the degree_list are all 0, set a random variable to 1
-            if sum(degree_list) == 0:
-                idx = random.randint(0, MAX_VAR_NUM - 1)
-                degree_list[idx] = 1
+            #degree_list = create_degree_list()
+            degree_list = create_simple_degree_list()
             # add indices whose degree is non-zero to the var_set
             for idx, degree in enumerate(degree_list):
                 if degree != 0:

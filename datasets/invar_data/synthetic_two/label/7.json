@@ -3,5 +3,5 @@
   "op": [
     ["x2", "x"]
   ],
-  "max_degree": [2.0, 1]
+  "max_degree": [2, 1]
 }
