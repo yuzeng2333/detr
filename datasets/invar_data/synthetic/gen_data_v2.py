@@ -22,7 +22,7 @@ else:
 CONST_MAX = 512
 X_MAX = 32 
 if RUN_REAL:
-    MIN_SOL_NUM = MAX_EXPR_NUM / 4
+    MIN_SOL_NUM = SOL_NUM / 4
 else:
     MIN_SOL_NUM = 3
 ENABLE_INEQ = False
