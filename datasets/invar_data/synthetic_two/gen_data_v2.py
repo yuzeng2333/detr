@@ -258,7 +258,7 @@ def print_result_to_separate_file(expr_list, sol_list, data_point_idx, MAX_DIGIT
                         max_degrees[idx] = degree
             f.write("  \"max_degree\": [")
             for degree in max_degrees:
-                f.write(str(degree) + ", ")
+                f.write(str(int(degree)) + ", ")
             # add degrees for w0 and w1
             #f.write("1, 1]\n")
             f.write("1]\n")
