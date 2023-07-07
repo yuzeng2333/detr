@@ -12,7 +12,7 @@ RUN_REAL = False
 PRINT_SEPARATELY = True
 EXPERIMENT_TO_RUN = 1000
 
-MAX_DEGREE = 2+1
+MAX_DEGREE = 2
 MAX_VAR_NUM = 1
 MAX_TERM_NUM = 1
 MAX_EXPR_NUM = 1
@@ -23,7 +23,7 @@ else:
 CONST_MAX = 512
 X_MAX = 32 
 if RUN_REAL:
-    MIN_SOL_NUM = MAX_EXPR_NUM / 4
+    MIN_SOL_NUM = SOL_NUM / 4
 else:
     MIN_SOL_NUM = 3
 ENABLE_INEQ = False
@@ -260,7 +260,8 @@ def print_result_to_separate_file(expr_list, sol_list, data_point_idx, MAX_DIGIT
             for degree in max_degrees:
                 f.write(str(degree) + ", ")
             # add degrees for w0 and w1
-            f.write("1, 1]\n")
+            #f.write("1, 1]\n")
+            f.write("1]\n")
             f.write("}\n")
         return data_point_idx + 1
     else:
