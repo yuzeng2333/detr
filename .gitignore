@@ -20,6 +20,9 @@ datasets/invar_data/synthetic/trial_equations
 datasets/invar_data/synthetic_two/data
 datasets/invar_data/synthetic_two/label
 datasets/invar_data/synthetic_two/equations
+datasets/invar_data/synthetic_two/val_data
+datasets/invar_data/synthetic_two/val_label
+datasets/invar_data/synthetic_two/val_equations
 datasets/invar_data/synthetic_two_fake/data
 datasets/invar_data/synthetic_two_fake/label
 datasets/invar_data/synthetic_two_fake/equations
