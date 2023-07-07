@@ -160,8 +160,8 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
         model.load_state_dict(torch.load(param_file))
     model.train()
     iteration = args.num_iterations
-    permute_num = 6
     max_var_num = args.max_var_num
+    permute_num = max_var_num
 
     reference_perm = list(range(0, max_var_num))
     permutations = []
@@ -181,7 +181,7 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
         batch_idx = 0
         loss_list = []
         for perm_idx in range(permute_num):
-            dim_size = max_var_num
+            #dim_size = max_var_num
             perm_list = permutations[perm_idx]
             perm = torch.tensor(perm_list)
             for batch in dataloader:

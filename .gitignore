@@ -17,6 +17,12 @@ datasets/invar_data/synthetic/val_equations
 datasets/invar_data/synthetic/trial_data
 datasets/invar_data/synthetic/trial_label
 datasets/invar_data/synthetic/trial_equations
+datasets/invar_data/synthetic_two/data
+datasets/invar_data/synthetic_two/label
+datasets/invar_data/synthetic_two/equations
+datasets/invar_data/synthetic_two_fake/data
+datasets/invar_data/synthetic_two_fake/label
+datasets/invar_data/synthetic_two_fake/equations
 experiment-*
 *.tmp
 *.pkl
@@ -26,4 +32,4 @@ not_tracked_dir/
 .vscode
 .history
 ./datasets/invar_data/synthetic_short
-
+job.slurm

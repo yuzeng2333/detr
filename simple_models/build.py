@@ -9,11 +9,11 @@ import torch.nn.functional as F
 
 def build_dnn_model(args):
     model = DNN(args.max_var_num)
-    criterion = DNN_CROSS_ENTROPY()
+    criterion = DNN_CROSS_ENTROPY(args.max_var_num)
     return model, criterion, count_accuracy
 
 def build_transformer_model(args):
     model = TransformerV2()
     #model = MyTransformer()
-    criterion = DNN_CROSS_ENTROPY()
+    criterion = DNN_CROSS_ENTROPY(args.max_var_num)
     return model, criterion, count_accuracy

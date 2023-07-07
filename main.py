@@ -33,7 +33,8 @@ def get_args_parser():
 
     # Model parameters
     parser.add_argument('--sel_model', type=str, default='detr', help='select model')
-    parser.add_argument('--max_var_num', type=int, default=5)
+    # the expected input length is always 5 for the model. So do not change it.
+    parser.add_argument('--max_var_num', type=int, default=5) # do not change it
     parser.add_argument('--frozen_weights', type=str, default=None,
                         help="Path to the pretrained model. If set, only the mask head will be trained")
     # * Backbone

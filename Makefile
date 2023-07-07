@@ -13,11 +13,9 @@ syn:
 dnn:
 	python main.py --sel_model dnn --invar_path ./datasets/invar_data/synthetic
 
-dbg-syn:
-	python -m pdb main.py --invar_path ./datasets/invar_data/synthetic
-
 dbg:
-	python -m pdb main.py --sel_model transformer --invar_path ./datasets/invar_data/synthetic
+	#python -m pdb main.py --sel_model transformer --invar_path ./datasets/invar_data/synthetic
+	python -m pdb main.py --sel_model transformer --invar_path ./datasets/invar_data/synthetic_two
 
 tran:
 	python main.py --sel_model transformer --invar_path ./datasets/invar_data/synthetic
@@ -30,3 +28,6 @@ trial-dbg:
 
 gpu:
 	python main.py --device cuda --sel_model transformer --invar_path ./datasets/invar_data/synthetic
+
+two:
+	python main.py --sel_model transformer --invar_path ./datasets/invar_data/synthetic_two
