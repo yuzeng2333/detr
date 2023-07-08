@@ -160,10 +160,10 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
         model.load_state_dict(torch.load(param_file))
     model.train()
     iteration = args.num_iterations
-    max_var_num = args.max_var_num
-    permute_num = max_var_num
+    d_model = args.d_model
+    permute_num = args.max_var_num
 
-    reference_perm = list(range(0, max_var_num))
+    reference_perm = list(range(0, d_model))
     permutations = []
     while len(permutations) < permute_num:
         perm = random.sample(reference_perm, len(reference_perm))

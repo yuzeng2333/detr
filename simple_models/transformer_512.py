@@ -25,7 +25,3 @@ class TransformerV2(nn.Module):
         # reshape the output to (batch_size, d_model, num_classes)
         output = output.reshape(output.shape[0], self.d_model, self.num_classes)
         return output
-
-
-# Initialize the model
-model = TransformerV2()

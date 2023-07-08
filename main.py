@@ -28,13 +28,14 @@ def get_args_parser():
     parser.add_argument('--clip_max_norm', default=0.1, type=float,
                         help='gradient clipping max norm')
     parser.add_argument('--trial', action='store_true', help='if true, run a trial')
-    parser.add_argument('--num_iterations', default=20, type=int)
+    parser.add_argument('--num_iterations', default=1, type=int)
     parser.add_argument('--save_path', default='model_parameters.pth', type=str)
 
     # Model parameters
     parser.add_argument('--sel_model', type=str, default='detr', help='select model')
     # the expected input length is always 5 for the model. So do not change it.
-    parser.add_argument('--max_var_num', type=int, default=5) # do not change it
+    parser.add_argument('--d_model', type=int, default=5) # the length of the input sequence to transformer. Do not change it.
+    parser.add_argument('--max_var_num', type=int, default=2) # do not change it
     parser.add_argument('--frozen_weights', type=str, default=None,
                         help="Path to the pretrained model. If set, only the mask head will be trained")
     # * Backbone

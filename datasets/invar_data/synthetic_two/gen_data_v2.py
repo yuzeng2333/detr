@@ -10,7 +10,7 @@ from collections import Counter
 
 RUN_REAL = False
 PRINT_SEPARATELY = True
-EXPERIMENT_TO_RUN = 1000
+EXPERIMENT_TO_RUN = 2
 
 MAX_DEGREE = 2
 MAX_VAR_NUM = 1

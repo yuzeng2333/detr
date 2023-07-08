@@ -124,5 +124,5 @@ def build(image_set, args):
     # currently only load the data for ps2
     #file_names = ["ps2", "ps3", "ps4_1", "ps5_1", "ps6_1", "sqrt1_1"]
     file_names = []
-    dataset = InvarianceDateSet(data_folder, label_folder, file_names, max_var_num)
+    dataset = InvarianceDateSet(data_folder, label_folder, file_names, args.d_model)
     return dataset
