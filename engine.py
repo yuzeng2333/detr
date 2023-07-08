@@ -192,6 +192,8 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
                     inputs = inputs[:, perm]
                     for target in targets:
                         degree_list = target['max_degree']
+                        # pad degree_list with 0s
+                        degree_list += [0] * (d_model - len(degree_list))
                         rearranged_list = [degree_list[i] for i in perm_list]
                         target['max_degree'] = rearranged_list
                     masks = masks[:, perm]
