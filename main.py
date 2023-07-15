@@ -28,8 +28,11 @@ def get_args_parser():
     parser.add_argument('--clip_max_norm', default=0.1, type=float,
                         help='gradient clipping max norm')
     parser.add_argument('--trial', action='store_true', help='if true, run a trial')
-    parser.add_argument('--num_iterations', default=1, type=int)
+    parser.add_argument('--num_iterations', default=200, type=int)
     parser.add_argument('--save_path', default='model_parameters.pth', type=str)
+    parser.add_argument('--enable_perm', action='store_false', help='if true, enable permutation')
+    #TODO: modify the default value of the following parameters
+    parser.add_argument('--train_num', default=10, help='the number of training data to use')
 
     # Model parameters
     parser.add_argument('--sel_model', type=str, default='detr', help='select model')
@@ -188,7 +191,7 @@ def main(args):
 
     print("Start training")
     train_invar(model, data_loader_train, data_loader_val, count_accuracy, criterion, optimizer, device, args)
-    evaluate_max_degree(model, data_loader_val, count_accuracy, device=device)
+    evaluate_max_degree(args, model, data_loader_val, count_accuracy, device=device)
     start_time = time.time()
     
 

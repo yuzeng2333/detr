@@ -8,9 +8,9 @@ from collections import Counter
 
 # this file is used to generate a dataset for invariance training
 
-RUN_REAL = False
+RUN_REAL = True
 PRINT_SEPARATELY = True
-EXPERIMENT_TO_RUN = 2
+EXPERIMENT_TO_RUN = 1000
 
 MAX_DEGREE = 2
 MAX_VAR_NUM = 1

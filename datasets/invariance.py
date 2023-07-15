@@ -15,7 +15,7 @@ from torch.utils.data import Dataset
 import json
 import numpy as np
 
-def ReadInvarianceData(data_folder, label_folder, filenames, max_var_num):
+def ReadInvarianceData(args, data_folder, label_folder, filenames, max_var_num):
     # if filenames is None, read all files in data_folder
     # find all the file names in data_folder
     if not filenames:
@@ -32,6 +32,10 @@ def ReadInvarianceData(data_folder, label_folder, filenames, max_var_num):
     batch_data = [] # shape: (num_files, MAX_VAR_NUM, 512)
     batch_label = []
     for filename in filenames:
+        # convert filename to int
+        filename_int = int(filename)
+        if args.train_num > 0 and filename_int > args.train_num:
+            continue
         # check if "filename.csv" exists in the data_folder
         full_filename = filename + ".csv"
         if (data_folder / full_filename).exists():
@@ -95,8 +99,8 @@ def ReadInvarianceData(data_folder, label_folder, filenames, max_var_num):
                     
 
 class InvarianceDateSet(Dataset):
-    def __init__(self, data_folder, label_folder, filenames, max_var_num):
-        data, mask, label = ReadInvarianceData(data_folder, label_folder, filenames, max_var_num)
+    def __init__(self, args, data_folder, label_folder, filenames, max_var_num):
+        data, mask, label = ReadInvarianceData(args, data_folder, label_folder, filenames, max_var_num)
         self.data = data
         self.mask = mask
         self.label = label
@@ -124,5 +128,5 @@ def build(image_set, args):
     # currently only load the data for ps2
     #file_names = ["ps2", "ps3", "ps4_1", "ps5_1", "ps6_1", "sqrt1_1"]
     file_names = []
-    dataset = InvarianceDateSet(data_folder, label_folder, file_names, args.d_model)
+    dataset = InvarianceDateSet(args, data_folder, label_folder, file_names, args.d_model)
     return dataset

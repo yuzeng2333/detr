@@ -161,7 +161,10 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
     model.train()
     iteration = args.num_iterations
     d_model = args.d_model
-    permute_num = args.max_var_num
+    if args.enable_perm:
+        permute_num = args.max_var_num
+    else:
+        permute_num = 1
 
     reference_perm = list(range(0, d_model))
     permutations = []
@@ -230,7 +233,8 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
             average_loss = sum(loss_list) / len(loss_list)
             print("Average loss: ", average_loss)
         if i % 10 == 0:
-            evaluate_max_degree(model, eval_dataloader, count_accuracy, device, False)
+        #if i % 1 == 0:
+            evaluate_max_degree(args, model, eval_dataloader, count_accuracy, device, False)
     # save the parameters
     torch.save(model.state_dict(), param_file)
 
@@ -290,19 +294,27 @@ def print_analysis_results(all_wrong_positions, all_wrong_values):
             print(f"{number}: {'*' * frequency}")
 
 
-def evaluate_max_degree(model, dataloader, count_accuracy, device, verbose=False):
+def evaluate_max_degree(args, model, dataloader, count_accuracy, device, verbose=False):
     model.eval()  # Put the model in evaluation mode
     all_degree_accuracy = []
     all_wrong_positions = []
     all_wrong_values = {}
-    # We don't need to update the model parameters, so we use torch.no_grad() 
+    # We don't need to update the model parameters, so we use torch.no_grad()
+    idx = 0 
     with torch.no_grad():
         for batch in dataloader:
             inputs, targets, masks = batch
             inputs = inputs.to(device)
 
             outputs = model(inputs, masks)
-            degree_accuracy, wrong_positions, wrong_values = count_accuracy(outputs, targets)
+            """output is of shape (batch_size, n_classes)"""        
+            output = output.view(-1, output.shape[-1])
+            pred = output.argmax(dim=1, keepdim=True)
+            # flatten pred
+            pred = pred.view(-1)
+            print_result = idx < 10
+            degree_accuracy, wrong_positions, wrong_values = count_accuracy(args, pred, targets, print_result)
+            idx = idx+1
             merge_wrong_positions(all_wrong_positions, wrong_positions)
             merge_wrong_values(all_wrong_values, wrong_values)
             all_degree_accuracy.append(degree_accuracy)

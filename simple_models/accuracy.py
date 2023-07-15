@@ -20,21 +20,21 @@ def analyze_result(pred, degrees):
     return wrong_positions, wrong_values
 
 
-def count_accuracy(output, targets):
-    """output is of shape (batch_size, n_classes)"""        
-    output = output.view(-1, output.shape[-1])
-    pred = output.argmax(dim=1, keepdim=True)
-    # flatten pred
-    pred = pred.view(-1)
+def count_accuracy(args, pred, targets, do_print):
+    d_model = args.d_model
     degrees = []
     for target in targets:
-        degrees.append(target['max_degree'])
+        single_degree = target['max_degree']
+        # pad the list single_degree to d_model
+        single_degree = single_degree + [0] * (d_model - len(single_degree))
+        degrees.append(single_degree)
     # flatten the first dimension of degrees
     degrees = torch.tensor(degrees).view(-1)
     result_list = pred.eq(degrees.view_as(pred))
     correct_num = result_list.sum().item()
     # print the targets and the pred
-    print('targets:', degrees)
-    print('pred   :', pred)
+    if do_print:
+        print('targets:', degrees)
+        print('pred   :', pred)
     wrong_positions, wrong_values = analyze_result(pred, degrees)
     return correct_num, wrong_positions, wrong_values
