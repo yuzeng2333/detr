@@ -191,6 +191,8 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
                 #print("batch:", batch_idx)
                 batch_idx += 1
                 inputs, targets, masks = batch
+                local_batch_size = inputs.shape[0]
+                print("batch_size: ", local_batch_size)
                 if perm_idx > 0:
                     inputs = inputs[:, perm]
                     for target in targets:
@@ -308,8 +310,8 @@ def evaluate_max_degree(args, model, dataloader, count_accuracy, device, verbose
 
             outputs = model(inputs, masks)
             """output is of shape (batch_size, n_classes)"""        
-            output = output.view(-1, output.shape[-1])
-            pred = output.argmax(dim=1, keepdim=True)
+            outputs_flatten = outputs.view(-1, outputs.shape[-1])
+            pred = outputs_flatten.argmax(dim=1, keepdim=True)
             # flatten pred
             pred = pred.view(-1)
             print_result = idx < 10

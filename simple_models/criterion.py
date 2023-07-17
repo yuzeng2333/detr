@@ -22,7 +22,7 @@ class DNN_CROSS_ENTROPY(nn.Module):
             degrees.append(single_degree)
         # flatten the first dimension of degrees
         degrees = torch.tensor(degrees).view(-1)
-        weights = torch.tensor([0.4, 0.2, 0.4])
+        weights = torch.tensor([0.25, 0.25, 0.5])
         loss= F.cross_entropy(outputs, degrees, weights)
         # return a dictionary
         return {'loss': loss}

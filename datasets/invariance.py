@@ -24,6 +24,7 @@ def ReadInvarianceData(args, data_folder, label_folder, filenames, max_var_num):
                 # remove the suffix in file name
                 filename = file.name
                 filename_without_suffix = filename.split('.')[0]
+                print("add file: ", filename_without_suffix)
                 filenames.append(filename_without_suffix)
     # map from file name to the list of iloc
     MAX_VAR_NUM = max_var_num

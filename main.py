@@ -19,20 +19,24 @@ from util.misc import custom_collate_fn as collate_fn
 
 def get_args_parser():
     parser = argparse.ArgumentParser('Set transformer detector', add_help=False)
+
+    # args to be modified:
+    parser.add_argument('--batch_size', default=100, type=int)
+    #TODO: modify the default value of the following parameters
+    # set it to 0 to disable it
+    parser.add_argument('--train_num', default=0, help='the number of training data to use')
+    parser.add_argument('--num_iterations', default=400, type=int)
+    parser.add_argument('--enable_perm', action='store_false', help='if true, enable permutation')
+    #parser.add_argument('--trial', action='store_false', help='if true, run a trial')
+
     parser.add_argument('--lr', default=1e-4, type=float)
     parser.add_argument('--lr_backbone', default=1e-5, type=float)
-    parser.add_argument('--batch_size', default=1, type=int)
     parser.add_argument('--weight_decay', default=1e-4, type=float)
     parser.add_argument('--epochs', default=300, type=int)
     parser.add_argument('--lr_drop', default=200, type=int)
     parser.add_argument('--clip_max_norm', default=0.1, type=float,
                         help='gradient clipping max norm')
-    parser.add_argument('--trial', action='store_true', help='if true, run a trial')
-    parser.add_argument('--num_iterations', default=200, type=int)
     parser.add_argument('--save_path', default='model_parameters.pth', type=str)
-    parser.add_argument('--enable_perm', action='store_false', help='if true, enable permutation')
-    #TODO: modify the default value of the following parameters
-    parser.add_argument('--train_num', default=10, help='the number of training data to use')
 
     # Model parameters
     parser.add_argument('--sel_model', type=str, default='detr', help='select model')
@@ -150,13 +154,12 @@ def main(args):
                                   weight_decay=args.weight_decay)
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, args.lr_drop)
 
-    dataset_train = build_dataset(image_set='trial', args=args) if args.trial else build_dataset(image_set='train', args=args)
+    #dataset_train = build_dataset(image_set='trial', args=args) if args.trial else build_dataset(image_set='train', args=args)
+    dataset_train = build_dataset(image_set='train', args=args)
     dataset_val = build_dataset(image_set='val', args=args)
 
-    batch_size = 2
-
-    data_loader_train = DataLoader(dataset_train, batch_size=batch_size, collate_fn=collate_fn, shuffle=True)
-    data_loader_val = DataLoader(dataset_val, batch_size=batch_size, collate_fn=collate_fn, shuffle=True)
+    data_loader_train = DataLoader(dataset_train, batch_size=args.batch_size, collate_fn=collate_fn, shuffle=True)
+    data_loader_val = DataLoader(dataset_val, batch_size=args.batch_size, collate_fn=collate_fn, shuffle=True)
 
     #if args.dataset_file == "coco_panoptic":
     #    # We also evaluate AP during panoptic training, on original coco DS
