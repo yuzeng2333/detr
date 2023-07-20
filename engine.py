@@ -205,7 +205,7 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
                         rearranged_list = [degree_list[i] for i in perm_list]
                         target['max_degree'] = rearranged_list
                     masks = masks[:, perm]
-                inputs = inputs.to(device)
+                inputs, targets = inputs.to(device), targets.to(device)
 
                 optimizer.zero_grad()
                 outputs = model(inputs, masks)
@@ -236,7 +236,8 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
                 total_loss.backward()
                 optimizer.step()
             average_loss = sum(loss_list) / len(loss_list)
-            print("Average loss: ", average_loss)
+            average_loss_cpu = average_loss.to('cpu')
+            print("Average loss: ", average_loss_cpu)
         if i % 10 == 0:
         #if i % 1 == 0:
             evaluate_max_degree(args, model, eval_dataloader, count_accuracy, device, False)
@@ -312,6 +313,7 @@ def evaluate_max_degree(args, model, dataloader, count_accuracy, device, verbose
             inputs = inputs.to(device)
 
             outputs = model(inputs, masks)
+            outputs = outputs.to('cpu')
             """output is of shape (batch_size, n_classes)"""        
             outputs_flatten = outputs.view(-1, outputs.shape[-1])
             pred = outputs_flatten.argmax(dim=1, keepdim=True)
@@ -328,6 +330,7 @@ def evaluate_max_degree(args, model, dataloader, count_accuracy, device, verbose
                 print("degree_accuracy: ", degree_accuracy)
     
     avg_degree_accuracy = sum(all_degree_accuracy) / len(all_degree_accuracy)
-    print("avg_degree_accuracy: ", avg_degree_accuracy)
+    avg_degree_accuracy_cpu = avg_degree_accuracy.to('cpu')
+    print("avg_degree_accuracy: ", avg_degree_accuracy_cpu)
     if verbose:
         print_analysis_results(all_wrong_positions, all_wrong_values)
