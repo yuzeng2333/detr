@@ -161,17 +161,20 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
     model.train()
     iteration = args.num_iterations
     d_model = args.d_model
-    if args.enable_perm:
+    if args.enable_perm > 0:
         permute_num = args.max_var_num
     else:
         permute_num = 1
 
     reference_perm = list(range(0, d_model))
     permutations = []
-    while len(permutations) < permute_num:
-        perm = random.sample(reference_perm, len(reference_perm))
-        if perm != reference_perm:
-            permutations.append(perm)
+    if permute_num == 1:
+        permutations.append(reference_perm)
+    else:
+        while len(permutations) < permute_num:
+            perm = random.sample(reference_perm, len(reference_perm))
+            if perm != reference_perm:
+                permutations.append(perm)
 
     print_loss = 0
     print_outputs = 0

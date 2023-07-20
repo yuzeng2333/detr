@@ -59,7 +59,7 @@ def ReadInvarianceData(args, data_folder, label_folder, filenames, max_var_num):
         col_num = len(data.columns)
         assert col_num <= MAX_VAR_NUM, f'number of columns in {filename} must be at most {MAX_VAR_NUM}'
         # convert the data to tensor
-        if data.values.dtype == np.object:
+        if data.values.dtype == np.object_:
             data_values = np.array([list(map(int, item[0].split())) for item in data.values])
         else:
             data_values = data.values
