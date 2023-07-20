@@ -205,12 +205,12 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
                         rearranged_list = [degree_list[i] for i in perm_list]
                         target['max_degree'] = rearranged_list
                     masks = masks[:, perm]
-                inputs, targets = inputs.to(device), targets.to(device)
+                inputs = inputs.to(device)
 
                 optimizer.zero_grad()
                 outputs = model(inputs, masks)
                 #loss = criterion(outputs.view(-1, outputs.size(-1)), targets.view(-1))
-                losses = criterion(outputs, targets)
+                losses = criterion(args, outputs, targets)
                 # print loss and iteration numbers
                 if(print_loss == 1):
                     print("Loss: ", losses.item())

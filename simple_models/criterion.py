@@ -6,7 +6,7 @@ class DNN_CROSS_ENTROPY(nn.Module):
     #def __init__(self, max_var_num):
     #    self.max_var_num = max_var_num
 
-    def forward(self, outputs, targets):
+    def forward(self, args, outputs, targets):
         # flatten the first dimension of outputs
         outputs = outputs.view(-1, outputs.shape[-1])
         #max_var_num = self.max_var_num
@@ -23,6 +23,7 @@ class DNN_CROSS_ENTROPY(nn.Module):
         # flatten the first dimension of degrees
         degrees = torch.tensor(degrees).view(-1)
         weights = torch.tensor([0.25, 0.25, 0.5])
+        degrees = degrees.to(args.device)
         loss= F.cross_entropy(outputs, degrees, weights)
         # return a dictionary
         return {'loss': loss}
