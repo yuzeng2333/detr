@@ -319,16 +319,17 @@ def evaluate_max_degree(args, model, dataloader, count_accuracy, device, verbose
             # flatten pred
             pred = pred.view(-1)
             print_result = idx < 10
-            degree_accuracy, wrong_positions, wrong_values = count_accuracy(args, pred, targets, print_result)
+            correct_num, wrong_positions, wrong_values = count_accuracy(args, pred, targets, print_result)
+            correct_ratio = correct_num / pred.shape[0]
             idx = idx+1
             merge_wrong_positions(all_wrong_positions, wrong_positions)
             merge_wrong_values(all_wrong_values, wrong_values)
-            all_degree_accuracy.append(degree_accuracy)
+            all_degree_accuracy.append(correct_ratio)
             # print the two accuracies
             if verbose:
-                print("degree_accuracy: ", degree_accuracy)
+                print("correct_degree_ratio: ", correct_ratio)
     
     avg_degree_accuracy = sum(all_degree_accuracy) / len(all_degree_accuracy)
-    print("avg_degree_accuracy: ", avg_degree_accuracy)
+    print("avg_degree_correct_ratio: ", avg_degree_accuracy)
     if verbose:
         print_analysis_results(all_wrong_positions, all_wrong_values)
