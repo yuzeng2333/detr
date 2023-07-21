@@ -236,8 +236,7 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
                 total_loss.backward()
                 optimizer.step()
             average_loss = sum(loss_list) / len(loss_list)
-            average_loss_cpu = average_loss.to('cpu')
-            print("Average loss: ", average_loss_cpu)
+            print("Average loss: ", average_loss)
         if i % 10 == 0:
         #if i % 1 == 0:
             evaluate_max_degree(args, model, eval_dataloader, count_accuracy, device, False)
@@ -330,7 +329,6 @@ def evaluate_max_degree(args, model, dataloader, count_accuracy, device, verbose
                 print("degree_accuracy: ", degree_accuracy)
     
     avg_degree_accuracy = sum(all_degree_accuracy) / len(all_degree_accuracy)
-    avg_degree_accuracy_cpu = avg_degree_accuracy.to('cpu')
-    print("avg_degree_accuracy: ", avg_degree_accuracy_cpu)
+    print("avg_degree_accuracy: ", avg_degree_accuracy)
     if verbose:
         print_analysis_results(all_wrong_positions, all_wrong_values)
