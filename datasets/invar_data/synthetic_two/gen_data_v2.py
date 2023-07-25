@@ -275,7 +275,7 @@ def print_result_to_separate_file(expr_list, sol_list, data_point_idx, MAX_DIGIT
                 f.write(str(int(degree)) + ", ")
             # add degrees for w0 and w1
             #f.write("1, 1]\n")
-            f.write("1]\n")
+            f.write("1]\n") # the degree 1 is for w0
             f.write("}\n")
         return data_point_idx + 1
     else:
@@ -395,7 +395,7 @@ def main(args):
               break
           equations = []
           max_xyz = 0
-          # assign a random number to x is 0 is in var_set
+          # assign a random number to x if 0 is in var_set
           if 0 in var_set:
               x_val = int(random.gauss(-1*X_MAX/3, X_MAX/3))
               max_xyz = max(max_xyz, x_val)

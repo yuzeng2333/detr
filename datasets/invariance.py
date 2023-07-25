@@ -93,6 +93,7 @@ def ReadInvarianceData(args, data_folder, label_folder, filenames, max_var_num):
         batch_mask = torch.cat((batch_mask, mask.unsqueeze(0)), dim=0)
         # read the label
         json_filename = filename + ".json"
+        print("open file: ", json_filename)
         with open(label_folder / json_filename) as f:
             label = json.load(f)
         batch_label.append(label)
