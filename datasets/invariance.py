@@ -24,7 +24,7 @@ def ReadInvarianceData(args, data_folder, label_folder, filenames, max_var_num):
                 # remove the suffix in file name
                 filename = file.name
                 filename_without_suffix = filename.split('.')[0]
-                print("add file: ", filename_without_suffix)
+                #print("add file: ", filename_without_suffix)
                 filenames.append(filename_without_suffix)
     # map from file name to the list of iloc
     MAX_VAR_NUM = max_var_num
@@ -65,7 +65,7 @@ def ReadInvarianceData(args, data_folder, label_folder, filenames, max_var_num):
             data_values = data.values
         data = torch.tensor(data_values)
         # transpose
-        print(data.shape)
+        #print(data.shape)
         data = data.transpose(0, 1)
         data = data.float()
         # normalization for each row: substract by mean, and divide by std
@@ -93,7 +93,7 @@ def ReadInvarianceData(args, data_folder, label_folder, filenames, max_var_num):
         batch_mask = torch.cat((batch_mask, mask.unsqueeze(0)), dim=0)
         # read the label
         json_filename = filename + ".json"
-        print("open file: ", json_filename)
+        #print("open file: ", json_filename)
         with open(label_folder / json_filename) as f:
             label = json.load(f)
         batch_label.append(label)

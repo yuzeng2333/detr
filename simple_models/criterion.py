@@ -22,7 +22,7 @@ class DNN_CROSS_ENTROPY(nn.Module):
             degrees.append(single_degree)
         # flatten the first dimension of degrees
         degrees = torch.tensor(degrees).view(-1)
-        weights = torch.tensor([1, 2, 4])
+        weights = torch.tensor([1.0, 2.0, 4.0])
         degrees = degrees.to(args.device)
         outputs = outputs.to(args.device)
         weights = weights.to(args.device)
