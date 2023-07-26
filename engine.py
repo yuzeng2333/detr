@@ -169,15 +169,6 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
         permute_num = 1
 
     reference_perm = list(range(0, d_model))
-    permutations = []
-    if permute_num == 1:
-        #permutations.append(reference_perm)
-        permutations.append([2, 3, 4, 1, 0])
-    else:
-        while len(permutations) < permute_num:
-            perm = random.sample(reference_perm, len(reference_perm))
-            if perm != reference_perm:
-                permutations.append(perm)
 
     print_loss = 0
     print_outputs = 0
@@ -187,6 +178,15 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
     for i in range(iteration):
     #for i in range(2):
         print("Iteration: ", i)
+        permutations = []
+        if permute_num == 1:
+            permutations.append(reference_perm)
+            #permutations.append([2, 3, 4, 1, 0])
+        else:
+            while len(permutations) < permute_num:
+                perm = random.sample(reference_perm, len(reference_perm))
+                if perm != reference_perm:
+                    permutations.append(perm)
         batch_idx = 0
         loss_list = []
         for perm_idx in range(permute_num):
@@ -199,14 +199,8 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
                 inputs, targets, masks = batch
                 local_batch_size = inputs.shape[0]
                 print("batch_size: ", local_batch_size)
-                inputs = inputs[:, perm]
-                for target in targets:
-                    degree_list = target['max_degree']
-                    # pad degree_list with 0s
-                    degree_list += [0] * (d_model - len(degree_list))
-                    rearranged_list = [degree_list[i] for i in perm_list]
-                    target['max_degree'] = rearranged_list
-                masks = masks[:, perm]
+                # permute the inputs, masks and targets
+                inputs, masks, targets = perm_data(inputs, masks, targets, perm_list, d_model)    
                 inputs = inputs.to(device)
 
                 optimizer.zero_grad()
@@ -239,8 +233,8 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
                 optimizer.step()
             average_loss = sum(loss_list) / len(loss_list)
             print("Average loss: ", average_loss)
-        if i % 10 == 0:
-        #if i % 1 == 0:
+        #if i % 10 == 0:
+        if i % 1 == 0:
             evaluate_max_degree(args, model, eval_dataloader, count_accuracy, device, False)
     # save the parameters
     torch.save(model.state_dict(), param_file)
@@ -307,12 +301,15 @@ def evaluate_max_degree(args, model, dataloader, count_accuracy, device, verbose
     all_wrong_positions = []
     all_wrong_values = {}
     # We don't need to update the model parameters, so we use torch.no_grad()
-    idx = 0 
+    idx = 0
+    reference_perm = [0, 1, 2, 3, 4]
     with torch.no_grad():
         for batch in dataloader:
             inputs, targets, masks = batch
+            perm_list = random.sample(reference_perm, len(reference_perm))
+            if args.enable_perm > 0:
+                inputs, masks, targets = perm_data(inputs, masks, targets, perm_list, args.d_model)
             inputs = inputs.to(device)
-
             outputs = model(inputs, masks)
             outputs = outputs.to('cpu')
             """output is of shape (batch_size, n_classes)"""        
@@ -335,3 +332,16 @@ def evaluate_max_degree(args, model, dataloader, count_accuracy, device, verbose
     print("avg_degree_correct_ratio: ", avg_degree_accuracy)
     if verbose:
         print_analysis_results(all_wrong_positions, all_wrong_values)
+
+
+def perm_data(inputs, masks, targets, perm_list, d_model):
+    perm = torch.tensor(perm_list)
+    inputs = inputs[:, perm]
+    for target in targets:
+        degree_list = target['max_degree']
+        # pad degree_list with 0s
+        degree_list += [0] * (d_model - len(degree_list))
+        rearranged_list = [degree_list[i] for i in perm_list]
+        target['max_degree'] = rearranged_list
+    masks = masks[:, perm]
+    return inputs, masks, targets
