@@ -15,7 +15,7 @@ dnn:
 
 dbg:
 	#python -m pdb main.py --sel_model transformer --invar_path ./datasets/invar_data/synthetic
-	python -m pdb main.py --sel_model transformer --invar_path ./datasets/invar_data/synthetic_two --enable_perm 1
+	python -m pdb main.py --sel_model transformer --invar_path ./datasets/invar_data/synthetic_two --enable_perm 0
 
 tran:
 	python main.py --sel_model transformer --invar_path ./datasets/invar_data/synthetic

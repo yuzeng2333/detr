@@ -171,7 +171,8 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
     reference_perm = list(range(0, d_model))
     permutations = []
     if permute_num == 1:
-        permutations.append(reference_perm)
+        #permutations.append(reference_perm)
+        permutations.append([2, 3, 4, 1, 0])
     else:
         while len(permutations) < permute_num:
             perm = random.sample(reference_perm, len(reference_perm))
