@@ -28,6 +28,6 @@ class DNN_CROSS_ENTROPY(nn.Module):
         avg_output = torch.mean(outputs, dim=0)
         avg_output = avg_output.unsqueeze(0)
         weights = weights.to(args.device)
-        loss= F.cross_entropy(outputs, degrees, weights) - avg_output[0][0] * 0.1
+        loss= F.cross_entropy(outputs, degrees, weights) - avg_output[0][0]
         # return a dictionary
         return {'loss': loss}
