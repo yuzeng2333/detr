@@ -164,7 +164,7 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
     # convert the string of args.enable_perm to int
     enable_perm = int(args.enable_perm)
     if enable_perm > 0:
-        permute_num = args.max_var_num
+        permute_num = args.perm_num
     else:
         permute_num = 1
 
