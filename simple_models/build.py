@@ -3,6 +3,7 @@ from .accuracy import count_accuracy
 from .criterion import DNN_CROSS_ENTROPY
 from .transformer_encoder import MyTransformer
 from .transformer_512 import TransformerV2
+from .pointnet import PointNetCls
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -17,5 +18,10 @@ def build_transformer_model(args):
     model = TransformerV2(args.d_model)
     #model = MyTransformer()
     #criterion = DNN_CROSS_ENTROPY(args.max_var_num)
+    criterion = DNN_CROSS_ENTROPY()
+    return model, criterion, count_accuracy
+
+def build_pointnet(args):
+    model = PointNetCls(args)
     criterion = DNN_CROSS_ENTROPY()
     return model, criterion, count_accuracy

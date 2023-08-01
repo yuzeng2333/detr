@@ -1,6 +1,6 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 from .invar_detr import build_detr
-from simple_models.build import build_dnn_model, build_transformer_model
+from simple_models.build import build_dnn_model, build_transformer_model, build_pointnet
 
 
 def build_model(args):
@@ -10,5 +10,7 @@ def build_model(args):
         return build_dnn_model(args)
     elif args.sel_model == 'transformer':
         return build_transformer_model(args)
+    elif args.sel_model == 'pointnet':
+        return build_pointnet(args)
     else:
         raise ValueError(f"Unrecognized model '{args.sel_model}'")
