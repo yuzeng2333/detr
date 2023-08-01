@@ -75,16 +75,10 @@ class STNkd(nn.Module):
 
         fc1 = self.fc1(x)
         # if fc1 has batch size of 1, skip batch norm
-        if fc1.shape[0] == 1:
-            x = F.relu(fc1)
-        else:
-            x = F.relu(self.bn4(fc1))
+        x = F.relu(self.bn4(fc1))
         fc2 = self.fc2(x)
         # if fc2 has batch size of 1, skip batch norm
-        if fc2.shape[0] == 1:
-            x = F.relu(fc2)
-        else:
-            x = F.relu(self.bn5(fc2))
+        x = F.relu(self.bn5(fc2))
         x = self.fc3(x)
 
         iden = Variable(torch.from_numpy(np.eye(self.k).flatten().astype(np.float32))).view(1,self.k*self.k).repeat(batchsize,1)
@@ -138,7 +132,7 @@ class PointNetfeat(nn.Module):
             return torch.cat([x, pointfeat], 1), trans, trans_feat
 
 class PointNetCls(nn.Module):
-    def __init__(self, args, k=15, feature_transform=False):
+    def __init__(self, args, k=5, feature_transform=False):
         super(PointNetCls, self).__init__()
         self.feature_transform = feature_transform
         self.feat = PointNetfeat(global_feat=True, feature_transform=feature_transform)
@@ -157,7 +151,8 @@ class PointNetCls(nn.Module):
         x = F.relu(self.bn1(self.fc1(x)))
         x = F.relu(self.bn2(self.dropout(self.fc2(x))))
         x = self.fc3(x)
-        output = x.reshape(x.shape[0], self.d_model, self.num_classes)
+        #output = x.reshape(x.shape[0], self.d_model, self.num_classes)
+        output = x
         #return F.log_softmax(x, dim=1), trans, trans_feat
         return output
 

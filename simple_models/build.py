@@ -1,6 +1,6 @@
 from .dnn import DNN
 from .accuracy import count_accuracy
-from .criterion import DNN_CROSS_ENTROPY
+from .criterion import DNN_CROSS_ENTROPY, OP_TYPE_LOSS
 from .transformer_encoder import MyTransformer
 from .transformer_512 import TransformerV2
 from .pointnet import PointNetCls
@@ -23,5 +23,5 @@ def build_transformer_model(args):
 
 def build_pointnet(args):
     model = PointNetCls(args)
-    criterion = DNN_CROSS_ENTROPY()
+    criterion = OP_TYPE_LOSS()
     return model, criterion, count_accuracy

@@ -29,3 +29,31 @@ class DNN_CROSS_ENTROPY(nn.Module):
         loss= F.cross_entropy(outputs, degrees, weights)
         # return a dictionary
         return {'loss': loss}
+
+
+# in this loss, the operator types (2-degree, 1-degree, etc.)
+class OP_TYPE_LOSS(nn.Module):
+    def __init__(self):
+        super(op_type_loss, self).__init__()
+
+    def forward(self, args, outputs, targets):
+        # flatten the first dimension of outputs
+        outputs = outputs.view(-1, outputs.shape[-1])
+        #max_var_num = self.max_var_num
+        #FIXME: hard code the d_model
+        d_model = 5
+        # declare a set
+        degree_set = set()
+        for target in targets:
+            degree_list = target['max_degree']
+            for deg in degree_list:
+                degree_set.add(deg)
+        degrees = [0] * d_model
+        for deg in degree_set:
+            degrees[deg] = 1
+        # flatten the first dimension of degrees
+        degrees = degrees.to(args.device)
+        outputs = outputs.to(args.device)
+        loss= nn.BCEWithLogitsLoss(outputs, degrees)
+        # return a dictionary
+        return {'loss': loss}
