@@ -1,4 +1,5 @@
 import torch
+from .util import get_degrees
 
 
 def analyze_result(pred, degrees):
@@ -22,12 +23,7 @@ def analyze_result(pred, degrees):
 
 def count_accuracy(args, pred, targets, do_print):
     d_model = args.d_model
-    degrees = []
-    for target in targets:
-        single_degree = target['max_degree']
-        # pad the list single_degree to d_model
-        single_degree = single_degree + [0] * (d_model - len(single_degree))
-        degrees.append(single_degree)
+    degrees = get_degrees(targets, d_model)
     # flatten the first dimension of degrees
     degrees = torch.tensor(degrees).view(-1)
     result_list = pred.eq(degrees.view_as(pred))

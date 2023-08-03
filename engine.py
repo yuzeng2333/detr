@@ -314,7 +314,8 @@ def evaluate_max_degree(args, model, dataloader, count_accuracy, device, verbose
             outputs = outputs.to('cpu')
             """output is of shape (batch_size, n_classes)"""        
             outputs_flatten = outputs.view(-1, outputs.shape[-1])
-            pred = outputs_flatten.argmax(dim=1, keepdim=True)
+            #pred = outputs_flatten.argmax(dim=1, keepdim=True)
+            pred = (torch.sign(outputs_flatten) + 1) / 2
             # flatten pred
             pred = pred.view(-1)
             print_result = idx < 10

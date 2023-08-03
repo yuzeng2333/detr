@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from .util import get_degrees
 
 class DNN_CROSS_ENTROPY(nn.Module):
     #def __init__(self, max_var_num):
@@ -34,7 +35,7 @@ class DNN_CROSS_ENTROPY(nn.Module):
 # in this loss, the operator types (2-degree, 1-degree, etc.)
 class OP_TYPE_LOSS(nn.Module):
     def __init__(self):
-        super(op_type_loss, self).__init__()
+        super(OP_TYPE_LOSS, self).__init__()
 
     def forward(self, args, outputs, targets):
         # flatten the first dimension of outputs
@@ -42,18 +43,12 @@ class OP_TYPE_LOSS(nn.Module):
         #max_var_num = self.max_var_num
         #FIXME: hard code the d_model
         d_model = 5
-        # declare a set
-        degree_set = set()
-        for target in targets:
-            degree_list = target['max_degree']
-            for deg in degree_list:
-                degree_set.add(deg)
-        degrees = [0] * d_model
-        for deg in degree_set:
-            degrees[deg] = 1
-        # flatten the first dimension of degrees
+        degrees = get_degrees(targets, d_model)
+        # convert list to tensor
+        degrees = torch.tensor(degrees)
         degrees = degrees.to(args.device)
         outputs = outputs.to(args.device)
-        loss= nn.BCEWithLogitsLoss(outputs, degrees)
+        criterion = nn.BCEWithLogitsLoss()
+        loss= criterion(outputs, degrees)
         # return a dictionary
         return {'loss': loss}
