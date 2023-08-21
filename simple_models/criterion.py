@@ -5,13 +5,13 @@ from .util import get_degrees
 
 class DNN_CROSS_ENTROPY(nn.Module):
     def __init__(self, args):
+        super(DNN_CROSS_ENTROPY, self).__init__()
         self.d_model = args.d_model
 
     def forward(self, args, outputs, targets):
         # flatten the first dimension of outputs
         outputs = outputs.view(-1, outputs.shape[-1])
         #max_var_num = self.max_var_num
-        #FIXME: hard code the d_model
         d_model = self.d_model
         degrees = []
         for target in targets:
