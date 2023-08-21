@@ -4,6 +4,7 @@ from .criterion import DNN_CROSS_ENTROPY, OP_TYPE_LOSS
 from .transformer_encoder import MyTransformer
 from .transformer_512 import TransformerV2
 from .pointnet import PointNetCls
+from .double_transformer import DoubleTransformer
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -24,4 +25,9 @@ def build_transformer_model(args):
 def build_pointnet(args):
     model = PointNetCls(args)
     criterion = OP_TYPE_LOSS()
+    return model, criterion, count_accuracy
+
+def build_double_transformer(args):
+    model = DoubleTransformer(args.d_model)
+    criterion = DNN_CROSS_ENTROPY()
     return model, criterion, count_accuracy

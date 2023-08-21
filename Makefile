@@ -14,8 +14,9 @@ dnn:
 	python main.py --sel_model dnn --invar_path ./datasets/invar_data/synthetic
 
 dbg:
-	#python -m pdb main.py --sel_model transformer --invar_path ./datasets/invar_data/synthetic_two --enable_perm 1
-	python -m pdb main.py --sel_model pointnet --invar_path ./datasets/invar_data/synthetic_two 
+	#python -m pdb main.py --sel_model pointnet --invar_path ./datasets/invar_data/synthetic --enable_perm 1
+	#python -m pdb main.py --sel_model pointnet --invar_path ./datasets/invar_data/synthetic
+	python -m pdb main.py --sel_model double --invar_path ./datasets/invar_data/synthetic_two   
 
 tran:
 	python main.py --sel_model transformer --invar_path ./datasets/invar_data/synthetic
@@ -30,7 +31,7 @@ gpu:
 	python main.py --device cuda --sel_model transformer --invar_path ./datasets/invar_data/synthetic
 
 two:
-	python main.py --sel_model transformer --invar_path ./datasets/invar_data/synthetic_two 
+	python main.py --sel_model double --invar_path ./datasets/invar_data/synthetic_two 
 
 pnt:
-	python main.py --sel_model pointnet --invar_path ./datasets/invar_data/synthetic_two 
+	python main.py --sel_model pointnet --invar_path ./datasets/invar_data/synthetic
