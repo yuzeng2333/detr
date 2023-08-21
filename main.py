@@ -21,7 +21,7 @@ def get_args_parser():
     parser = argparse.ArgumentParser('Set transformer detector', add_help=False)
 
     # args to be modified:
-    parser.add_argument('--batch_size', default=200, type=int)
+    parser.add_argument('--batch_size', default=2, type=int)
     #TODO: modify the default value of the following parameters
     # set it to 0 to disable it
     parser.add_argument('--train_num', default=0, help='the number of training data to use')
@@ -42,7 +42,7 @@ def get_args_parser():
     # Model parameters
     parser.add_argument('--sel_model', type=str, default='detr', help='select model')
     # the expected input length is always 5 for the model. So do not change it.
-    parser.add_argument('--d_model', type=int, default=16) # the length of the input sequence to transformer. Do not change it.
+    parser.add_argument('--d_model', type=int, default=2) # the length of the input sequence to transformer. Do not change it.
     parser.add_argument('--max_var_num', type=int, default=2) # do not change it
     parser.add_argument('--frozen_weights', type=str, default=None,
                         help="Path to the pretrained model. If set, only the mask head will be trained")

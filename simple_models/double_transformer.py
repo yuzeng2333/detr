@@ -34,7 +34,7 @@ class DoubleTransformer(nn.Module):
 
 
     def forward(self, src, masks):
-        use_pred_tokens = False
+        use_pred_tokens = True
         # the shape of src is (batch_size, variable_number, loop_iter) (200, 5, 512)
         # get the first two dimension size of src
         batch_size = src.shape[0]
@@ -90,7 +90,6 @@ class DoubleTransformer(nn.Module):
             x_avg = torch.mean(x_vertical3, dim=1)
             output = self.linear(x_avg)
         else:
-            #TODO
             pred_tokens = x_vertical3[:, -1, :, :]
             # the shape of pred_tokens is (batch_size, variable_number, d_model)
             output = self.linear(pred_tokens)
