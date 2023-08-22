@@ -11,15 +11,15 @@ class DNN_CROSS_ENTROPY(nn.Module):
     def forward(self, args, outputs, targets):
         # flatten the first dimension of outputs
         outputs = outputs.view(-1, outputs.shape[-1])
-        #max_var_num = self.max_var_num
+        var_num = args.max_var_num
         d_model = self.d_model
         degrees = []
         for target in targets:
             single_degree = target['max_degree']
             length = len(single_degree)
-            if length < d_model:
+            if length < var_num:
                 # pad the list with 0
-                single_degree = single_degree + [0] * (d_model - length)
+                single_degree = single_degree + [0] * (var_num - length)
             degrees.append(single_degree)
         # flatten the first dimension of degrees
         degrees = torch.tensor(degrees).view(-1)

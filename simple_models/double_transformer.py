@@ -3,7 +3,7 @@ import torch
 from torch import nn
 
 class DoubleTransformer(nn.Module):
-    def __init__(self, args, d_model=512, nhead=1, num_layers=6, num_classes=3):
+    def __init__(self, args, nhead=1, num_layers=6, num_classes=3):
         super(DoubleTransformer, self).__init__()
         self.d_model = args.d_model
         self.nhead = nhead
@@ -14,17 +14,17 @@ class DoubleTransformer(nn.Module):
         self.pred_tokens = nn.Parameter(torch.randn(args.batch_size, args.max_var_num, 1))
 
         self.transformer_horizontal_layer = nn.TransformerEncoder(
-            nn.TransformerEncoderLayer(d_model, nhead),
+            nn.TransformerEncoderLayer(self.d_model, nhead),
             1
         )
         self.transformer_vertical_layer = nn.TransformerEncoder(
-            nn.TransformerEncoderLayer(d_model, nhead),
+            nn.TransformerEncoderLayer(self.d_model, nhead),
             1
         )
 
         # TODO: fix this hard coding
         loop_iter = args.loop_iter
-        self.linear = nn.Linear(d_model, num_classes)
+        self.linear = nn.Linear(self.d_model, num_classes)
 
 
     def get_embedding(self, num, d_model):
