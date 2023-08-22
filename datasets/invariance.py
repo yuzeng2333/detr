@@ -103,7 +103,7 @@ def ReadInvarianceData(args, data_folder, label_folder, filenames):
 
 class InvarianceDateSet(Dataset):
     def __init__(self, args, data_folder, label_folder, filenames, max_var_num):
-        data, mask, label = ReadInvarianceData(args, data_folder, label_folder, filenames, max_var_num)
+        data, mask, label = ReadInvarianceData(args, data_folder, label_folder, filenames)
         self.data = data
         self.mask = mask
         self.label = label
