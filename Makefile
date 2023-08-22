@@ -31,7 +31,7 @@ gpu:
 	python main.py --device cuda --sel_model transformer --invar_path ./datasets/invar_data/synthetic
 
 two:
-	python main.py --sel_model double --invar_path ./datasets/invar_data/synthetic_two 
+	python main.py --sel_model double --invar_path ./datasets/invar_data/synthetic_two --perm_num 2
 
 pnt:
 	python main.py --sel_model pointnet --invar_path ./datasets/invar_data/synthetic

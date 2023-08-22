@@ -3,12 +3,15 @@ import torch
 from torch import nn
 
 class DoubleTransformer(nn.Module):
-    def __init__(self, d_model=512, nhead=1, num_layers=6, num_classes=3):
+    def __init__(self, args, d_model=512, nhead=1, num_layers=6, num_classes=3):
         super(DoubleTransformer, self).__init__()
-        self.d_model = d_model
+        self.d_model = args.d_model
         self.nhead = nhead
         self.num_layers = num_layers
         self.num_classes = num_classes
+        self.batch_size = args.batch_size
+        self.max_var_num = args.max_var_num
+        self.pred_tokens = nn.Parameter(torch.randn(args.batch_size, args.max_var_num, 1))
 
         self.transformer_horizontal_layer = nn.TransformerEncoder(
             nn.TransformerEncoderLayer(d_model, nhead),
@@ -20,7 +23,7 @@ class DoubleTransformer(nn.Module):
         )
 
         # TODO: fix this hard coding
-        loop_iter = 512
+        loop_iter = args.loop_iter
         self.linear = nn.Linear(d_model, num_classes)
 
 
@@ -41,10 +44,11 @@ class DoubleTransformer(nn.Module):
         variable_number = src.shape[1]
         loop_iter = src.shape[2]
         d_model = self.d_model
-        predict_tokens = torch.randn(batch_size, variable_number, 1)
+        assert batch_size == self.batch_size
+        assert variable_number == self.max_var_num
         # concatenate the src and predict_tokens
         if use_pred_tokens:
-            src = torch.cat((src, predict_tokens), dim=2)
+            src = torch.cat((src, self.pred_tokens), dim=2)
 
         # map each number to its embedding
         # now the shape is (batch_size, variable_number, loop_iter, d_model) [200, 5, 513, 512]

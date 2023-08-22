@@ -15,9 +15,10 @@ from torch.utils.data import Dataset
 import json
 import numpy as np
 
-def ReadInvarianceData(args, data_folder, label_folder, filenames, max_var_num):
+def ReadInvarianceData(args, data_folder, label_folder, filenames):
     # if filenames is None, read all files in data_folder
     # find all the file names in data_folder
+    loop_iter = args.loop_iter
     if not filenames:
         for file in data_folder.iterdir():
             if file.is_file():
@@ -27,10 +28,10 @@ def ReadInvarianceData(args, data_folder, label_folder, filenames, max_var_num):
                 #print("add file: ", filename_without_suffix)
                 filenames.append(filename_without_suffix)
     # map from file name to the list of iloc
-    MAX_VAR_NUM = max_var_num
+    MAX_VAR_NUM = args.max_var_num
     batch_mask = torch.tensor([]) # shape: (num_files, MAX_VAR_NUM)
     var_names = {}
-    batch_data = [] # shape: (num_files, MAX_VAR_NUM, 512)
+    batch_data = [] # shape: (num_files, MAX_VAR_NUM, loop_iter )
     batch_label = []
     for filename in filenames:
         # convert filename to int
@@ -77,18 +78,18 @@ def ReadInvarianceData(args, data_folder, label_folder, filenames, max_var_num):
         data = data.transpose(0, 1)
         data = torch.nn.functional.pad(data, (0, MAX_VAR_NUM - col_num))
         data = data.transpose(0, 1)
-        # assert number of rows must be at least 512
+        # assert number of rows must be at least loop_iter
         feature_size = data.shape[1]
-        if feature_size >= 512:
-            # get the first 512
-            data = data[:, :512]
+        if feature_size >= loop_iter:
+            # get the first loop_iter items
+            data = data[:, :loop_iter]
         else:
-            # pad to 512
-            data = torch.nn.functional.pad(data, (0, 512 - data.shape[1]))
+            # pad to loop_iter items
+            data = torch.nn.functional.pad(data, (0, loop_iter - data.shape[1]))
         # append to batch_data
         batch_data.append(data)
         # get the mask
-        mask = torch.zeros(MAX_VAR_NUM, 512)
+        mask = torch.zeros(MAX_VAR_NUM, loop_iter)
         mask[:col_num, :feature_size] = 1
         batch_mask = torch.cat((batch_mask, mask.unsqueeze(0)), dim=0)
         # read the label

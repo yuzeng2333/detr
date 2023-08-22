@@ -26,6 +26,7 @@ def get_args_parser():
     # set it to 0 to disable it
     parser.add_argument('--train_num', default=0, help='the number of training data to use')
     parser.add_argument('--num_iterations', default=400, type=int)
+    parser.add_argument('--loop_iter', default=512, type=int)
     parser.add_argument('--perm_num', default=25, type=int)
     parser.add_argument('--enable_perm', default=0, type=int, help='if true, enable permutation')
     #parser.add_argument('--trial', action='store_false', help='if true, run a trial')

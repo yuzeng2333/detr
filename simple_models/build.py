@@ -28,6 +28,6 @@ def build_pointnet(args):
     return model, criterion, count_accuracy
 
 def build_double_transformer(args):
-    model = DoubleTransformer(args.d_model)
+    model = DoubleTransformer(args)
     criterion = DNN_CROSS_ENTROPY(args)
     return model, criterion, count_accuracy
