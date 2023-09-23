@@ -240,8 +240,7 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
         #if i % 1 == 0:
             evaluate_max_degree(args, model, eval_dataloader, count_accuracy, device, False)
         # save the parameters
-        if i % 5 == 0:
-            torch.save(model.state_dict(), param_file)
+        torch.save(model.state_dict(), param_file)
 
 
 def evaluate_op_eq(model, dataloader, count_accuracy, device):
