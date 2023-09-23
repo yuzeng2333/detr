@@ -21,7 +21,7 @@ def get_args_parser():
     parser = argparse.ArgumentParser('Set transformer detector', add_help=False)
 
     # args to be modified:
-    parser.add_argument('--batch_size', default=2, type=int)
+    parser.add_argument('--batch_size', default=64, type=int)
     #TODO: modify the default value of the following parameters
     # set it to 0 to disable it
     parser.add_argument('--train_num', default=0, help='the number of training data to use')
