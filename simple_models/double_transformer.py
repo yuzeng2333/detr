@@ -5,6 +5,7 @@ from torch import nn
 class DoubleTransformer(nn.Module):
     def __init__(self, args, nhead=1, num_layers=6, num_classes=3):
         super(DoubleTransformer, self).__init__()
+        self.device = args.device
         self.d_model = args.d_model
         self.nhead = nhead
         self.num_layers = num_layers
@@ -15,11 +16,11 @@ class DoubleTransformer(nn.Module):
 
         self.transformer_horizontal_layer = nn.TransformerEncoder(
             nn.TransformerEncoderLayer(self.d_model, nhead),
-            1
+            3
         )
         self.transformer_vertical_layer = nn.TransformerEncoder(
             nn.TransformerEncoderLayer(self.d_model, nhead),
-            1
+            3
         )
 
         # TODO: fix this hard coding
@@ -61,23 +62,22 @@ class DoubleTransformer(nn.Module):
                 for k in range(extended_loop_iter):
                     src_extended[i][j][k] = self.get_embedding(src[i][j][k], d_model)
 
+        src_extended.to(self.device)
         # merge the first two dimensions
         # now the shape is (batch_size * variable_number, loop_iter, d_model)
         src_extended = src_extended.reshape(batch_size * variable_number, extended_loop_iter, d_model)
         # apply the transformer layer to the horizontal dimension (loop_iter)
         # the shape of output is (batch_size, variable_number, loop_iter, d_model)
         x_horizontal1 = self.transformer_horizontal_layer(src_extended)
-        x_horizontal2 = self.transformer_horizontal_layer(x_horizontal1)
-        x_horizontal3 = self.transformer_horizontal_layer(x_horizontal2)
         # reshape the output to (batch_size, variable_number, loop_iter, d_model)
-        x_horizontal3 = x_horizontal3.reshape(batch_size, variable_number, extended_loop_iter, d_model)
+        x_horizontal2 = x_horizontal1.reshape(batch_size, variable_number, extended_loop_iter, d_model)
 
         # exchange the 2rd and 3rd dimension
-        x_horizontal4 = x_horizontal3.transpose(1, 2)
+        x_horizontal3 = x_horizontal2.transpose(1, 2)
 
         # merge the first two dimensions
         # now the shape is (batch_size * loop_iter, variable_number, d_model)
-        x_horizontal4 = x_horizontal4.reshape(batch_size * extended_loop_iter, variable_number, d_model)
+        x_horizontal4 = x_horizontal3.reshape(batch_size * extended_loop_iter, variable_number, d_model)
 
         # apply the transformer layer to the vertical dimension (variable_number)
         # the shape of output is (batch_size, loop_iter, variable_number, d_model)
