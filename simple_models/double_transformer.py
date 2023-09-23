@@ -62,12 +62,12 @@ class DoubleTransformer(nn.Module):
                 for k in range(extended_loop_iter):
                     src_extended[i][j][k] = self.get_embedding(src[i][j][k], d_model)
 
-        src_extended.to(self.device)
         # merge the first two dimensions
         # now the shape is (batch_size * variable_number, loop_iter, d_model)
         src_extended = src_extended.reshape(batch_size * variable_number, extended_loop_iter, d_model)
         # apply the transformer layer to the horizontal dimension (loop_iter)
         # the shape of output is (batch_size, variable_number, loop_iter, d_model)
+        src_extended = src_extended.to('cuda')
         x_horizontal1 = self.transformer_horizontal_layer(src_extended)
         # reshape the output to (batch_size, variable_number, loop_iter, d_model)
         x_horizontal2 = x_horizontal1.reshape(batch_size, variable_number, extended_loop_iter, d_model)

@@ -208,7 +208,7 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
 
                 optimizer.zero_grad()
                 outputs = model(inputs, masks)
-                outputs.to('cpu')
+                outputs = outputs.to('cpu')
                 #loss = criterion(outputs.view(-1, outputs.size(-1)), targets.view(-1))
                 losses = criterion(args, outputs, targets)
                 # print loss and iteration numbers
