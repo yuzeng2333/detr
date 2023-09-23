@@ -171,7 +171,7 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
 
     reference_perm = list(range(0, var_num))
 
-    print_loss = 0
+    print_loss = 1
     print_outputs = 0
     print_weights = 0            
     print("{:<10} {:<10} {:<10}".format('eq', 'op', 'total'))  # printing the headers
@@ -213,7 +213,7 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
                 losses = criterion(args, outputs, targets)
                 # print loss and iteration numbers
                 if(print_loss == 1):
-                    print("Loss: ", losses.item())
+                    print("Loss: ", losses['loss'])
                 if print_outputs == 1:
                     print("outputs: ", outputs)
                 # print the weights
