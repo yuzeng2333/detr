@@ -190,14 +190,14 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
                     permutations.append(perm)
         batch_idx = 0
         loss_list = []
-        for perm_idx in range(permute_num):
-            print("perm_idx: ", perm_idx)
-            #dim_size = max_var_num
-            perm_list = permutations[perm_idx]
-            perm = torch.tensor(perm_list)
-            for batch in dataloader:
+        for batch in dataloader:
+            for perm_idx in range(permute_num):
+                #print("perm_idx: ", perm_idx)
+                #dim_size = max_var_num
+                perm_list = permutations[perm_idx]
                 print("batch:", batch_idx)
-                batch_idx += 1
+                if perm_idx == 0:
+                    batch_idx += 1
                 inputs, targets, masks = batch
                 local_batch_size = inputs.shape[0]
                 #print("batch_size: ", local_batch_size)
