@@ -186,16 +186,15 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
         else:
             while len(permutations) < permute_num:
                 perm = random.sample(reference_perm, len(reference_perm))
-                if perm != reference_perm:
-                    permutations.append(perm)
+                permutations.append(perm)
         batch_idx = 0
-        loss_list = []
         for batch in dataloader:
+            loss_list = []
             for perm_idx in range(permute_num):
                 #print("perm_idx: ", perm_idx)
                 #dim_size = max_var_num
                 perm_list = permutations[perm_idx]
-                print("batch:", batch_idx)
+                print("batch: ", batch_idx, "perm: ", perm_idx, "perm_list: ", perm_list )
                 if perm_idx == 0:
                     batch_idx += 1
                 inputs, targets, masks = batch
@@ -213,7 +212,7 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
                 losses = criterion(args, outputs, targets)
                 # print loss and iteration numbers
                 if(print_loss == 1):
-                    print("Loss: ", losses['loss'])
+                    print("Loss: ", losses['loss'].item())
                 if print_outputs == 1:
                     print("outputs: ", outputs)
                 # print the weights
