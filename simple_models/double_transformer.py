@@ -52,7 +52,7 @@ class DoubleTransformer(nn.Module):
             src = torch.cat((src, self.pred_tokens), dim=2)
 
         # map each number to its embedding
-        # now the shape is (batch_size, variable_number, loop_iter, d_model) [200, 5, 513, 512]
+        # now the shape of src and src_extended is (batch_size, variable_number, extended_loop_iter, d_model) [200, 5, 513, 512]
         extended_loop_iter = loop_iter
         if use_pred_tokens:
             extended_loop_iter += 1
@@ -67,7 +67,7 @@ class DoubleTransformer(nn.Module):
         src_extended = src_extended.reshape(batch_size * variable_number, extended_loop_iter, d_model)
         # apply the transformer layer to the horizontal dimension (loop_iter)
         # the shape of output is (batch_size, variable_number, loop_iter, d_model)
-        src_extended = src_extended.to('cuda')
+        src_extended = src_extended.to(self.device)
         x_horizontal1 = self.transformer_horizontal_layer(src_extended)
         # reshape the output to (batch_size, variable_number, loop_iter, d_model)
         x_horizontal2 = x_horizontal1.reshape(batch_size, variable_number, extended_loop_iter, d_model)
@@ -82,19 +82,17 @@ class DoubleTransformer(nn.Module):
         # apply the transformer layer to the vertical dimension (variable_number)
         # the shape of output is (batch_size, loop_iter, variable_number, d_model)
         x_vertical1 = self.transformer_vertical_layer(x_horizontal4)
-        x_vertical2 = self.transformer_vertical_layer(x_vertical1)
-        x_vertical3 = self.transformer_vertical_layer(x_vertical2)
 
         # reshape the output to (batch_size, loop_iter, variable_number, d_model)
-        x_vertical3 = x_vertical3.reshape(batch_size, extended_loop_iter, variable_number, d_model)
+        x_vertical1 = x_vertical1.reshape(batch_size, extended_loop_iter, variable_number, d_model)
 
         # do average to the dimension of loop_iter
         # the shape of output is (batch_size, variable_number, d_model)
         if use_pred_tokens == False:
-            x_avg = torch.mean(x_vertical3, dim=1)
+            x_avg = torch.mean(x_vertical1, dim=1)
             output = self.linear(x_avg)
         else:
-            pred_tokens = x_vertical3[:, -1, :, :]
+            pred_tokens = x_vertical1[:, -1, :, :]
             # the shape of pred_tokens is (batch_size, variable_number, d_model)
             output = self.linear(pred_tokens)
         return output
