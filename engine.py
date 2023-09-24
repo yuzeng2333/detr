@@ -180,13 +180,13 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
     #for i in range(2):
         print("Iteration: ", i)
         permutations = []
-        if permute_num == 1:
-            permutations.append(reference_perm)
-            #permutations.append([2, 3, 4, 1, 0])
-        else:
-            while len(permutations) < permute_num:
-                perm = random.sample(reference_perm, len(reference_perm))
-                permutations.append(perm)
+        #if permute_num == 1:
+        #    permutations.append(reference_perm)
+        #    #permutations.append([2, 3, 4, 1, 0])
+        #else:
+        while len(permutations) < permute_num:
+            perm = random.sample(reference_perm, len(reference_perm))
+            permutations.append(perm)
         batch_idx = 0
         for batch in dataloader:
             loss_list = []

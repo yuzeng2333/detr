@@ -17,7 +17,7 @@ dbg:
 	#python -m pdb main.py --sel_model pointnet --invar_path ./datasets/invar_data/synthetic --enable_perm 1
 	#python -m pdb main.py --sel_model pointnet --invar_path ./datasets/invar_data/synthetic
 	#python -m pdb main.py --sel_model double --invar_path ./datasets/invar_data/synthetic_two
-	python -m pdb main.py --sel_model double --invar_path ./datasets/invar_data/synthetic_two --device cpu --enable_perm 1 --num_iterations 500 --perm_num 4
+	python -m pdb main.py --sel_model double --invar_path ./datasets/invar_data/synthetic_two --device cpu --enable_perm 1 --num_iterations 500 --perm_num 1
 
 
 tran:
@@ -39,4 +39,4 @@ pnt:
 	python main.py --sel_model pointnet --invar_path ./datasets/invar_data/synthetic
  
 double:
-	python main.py --sel_model double --invar_path ./datasets/invar_data/synthetic_two --device cpu --enable_perm 1 --num_iterations 500 --perm_num 4
+	python main.py --sel_model double --invar_path ./datasets/invar_data/synthetic_two --device cpu --enable_perm 1 --num_iterations 500 --perm_num 1

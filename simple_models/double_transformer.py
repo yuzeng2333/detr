@@ -14,14 +14,16 @@ class DoubleTransformer(nn.Module):
         self.max_var_num = args.max_var_num
         self.pred_tokens = nn.Parameter(torch.randn(args.batch_size, args.max_var_num, 1))
 
-        self.transformer_horizontal_layer = nn.TransformerEncoder(
+        self.transformer_horizontal_layer = nn.DataParallel(nn.TransformerEncoder(
             nn.TransformerEncoderLayer(self.d_model, nhead),
-            3
-        )
-        self.transformer_vertical_layer = nn.TransformerEncoder(
+            #3
+            2
+        ))
+        self.transformer_vertical_layer = nn.DataParallel(nn.TransformerEncoder(
             nn.TransformerEncoderLayer(self.d_model, nhead),
-            3
-        )
+            #3
+            2
+        ))
 
         # TODO: fix this hard coding
         loop_iter = args.loop_iter
