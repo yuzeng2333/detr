@@ -58,7 +58,9 @@ class DoubleTransformer(nn.Module):
         extended_loop_iter = loop_iter
         if use_pred_tokens:
             extended_loop_iter += 1
+  
         src_extended = torch.zeros(batch_size, variable_number, extended_loop_iter, d_model)
+        src_extended = src_extended.to(self.device)
         for i in range(batch_size):
             for j in range(variable_number):
                 for k in range(extended_loop_iter):
@@ -69,7 +71,6 @@ class DoubleTransformer(nn.Module):
         src_extended = src_extended.reshape(batch_size * variable_number, extended_loop_iter, d_model)
         # apply the transformer layer to the horizontal dimension (loop_iter)
         # the shape of output is (batch_size, variable_number, loop_iter, d_model)
-        src_extended = src_extended.to(self.device)
         x_horizontal1 = self.transformer_horizontal_layer(src_extended)
         # reshape the output to (batch_size, variable_number, loop_iter, d_model)
         x_horizontal2 = x_horizontal1.reshape(batch_size, variable_number, extended_loop_iter, d_model)
