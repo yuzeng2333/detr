@@ -194,7 +194,7 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
             permutations.append(perm)   
         #batch_idx = 0
         for batch_idx, batch in enumerate(dataloader):
-            if args.early_stop and batch_idx == 10:
+            if args.early_stop and batch_idx == 1:
                 break
             loss_list = []
             for perm_idx in range(permute_num):
@@ -313,7 +313,9 @@ def evaluate_max_degree(args, model, dataloader, count_accuracy, device, verbose
     all_wrong_values = {}
     # We don't need to update the model parameters, so we use torch.no_grad()
     idx = 0
-    reference_perm = [0, 1, 2, 3, 4]
+    var_num = args.max_var_num
+    reference_perm = list(range(0, var_num))
+
     with torch.no_grad():
         for batch in dataloader:
             inputs, targets, masks = batch
