@@ -159,7 +159,10 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
         print("Loading saved parameters...")
         model.load_state_dict(torch.load(param_file))
     model.train()
-    iteration = args.num_iterations
+    if args.early_stop:
+        iteration = 1
+    else:
+        iteration = args.num_iterations
     d_model = args.d_model
     var_num = args.max_var_num
     # convert the string of args.enable_perm to int
@@ -191,6 +194,8 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
             permutations.append(perm)   
         #batch_idx = 0
         for batch_idx, batch in enumerate(dataloader):
+            if args.early_stop and batch_idx == 10:
+                break
             loss_list = []
             for perm_idx in range(permute_num):
                 #print("perm_idx: ", perm_idx)

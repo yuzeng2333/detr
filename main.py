@@ -29,6 +29,7 @@ def get_args_parser():
     parser.add_argument('--loop_iter', default=512, type=int)
     parser.add_argument('--perm_num', default=25, type=int)
     parser.add_argument('--enable_perm', default=0, type=int, help='if true, enable permutation')
+    parser.add_argument('--early_stop', default=0, type=int, help='if true, step the training after 10 batches')
     #parser.add_argument('--trial', action='store_false', help='if true, run a trial')
 
     parser.add_argument('--lr', default=1e-4, type=float)
