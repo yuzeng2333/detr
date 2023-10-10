@@ -47,7 +47,7 @@ class DoubleTransformer(nn.Module):
         variable_number = src.shape[1]
         loop_iter = src.shape[2]
         d_model = self.d_model
-        assert batch_size == self.batch_size
+        #assert batch_size == self.batch_size
         assert variable_number == self.max_var_num
         # concatenate the src and predict_tokens
         if use_pred_tokens:

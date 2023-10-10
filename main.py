@@ -163,6 +163,10 @@ def main(args):
     data_loader_train = DataLoader(dataset_train, batch_size=args.batch_size, collate_fn=collate_fn, shuffle=True)
     data_loader_val = DataLoader(dataset_val, batch_size=args.batch_size, collate_fn=collate_fn, shuffle=True)
 
+    # print the number of batches
+    print("number of training batches: ", len(data_loader_train))
+    print("number of eval batches: ", len(data_loader_val))
+
     #if args.dataset_file == "coco_panoptic":
     #    # We also evaluate AP during panoptic training, on original coco DS
     #    coco_val = datasets.coco.build("val", args)

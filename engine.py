@@ -176,6 +176,8 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
     print_weights = 0            
     print("{:<10} {:<10} {:<10}".format('eq', 'op', 'total'))  # printing the headers
     print("-"*30)  # print line for separation
+    # print the length of the batches
+    print("len(dataloader): ", len(dataloader) )
     for i in range(iteration):
     #for i in range(2):
         print("Iteration: ", i)
@@ -186,17 +188,17 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
         #else:
         while len(permutations) < permute_num:
             perm = random.sample(reference_perm, len(reference_perm))
-            permutations.append(perm)
-        batch_idx = 0
-        for batch in dataloader:
+            permutations.append(perm)   
+        #batch_idx = 0
+        for batch_idx, batch in enumerate(dataloader):
             loss_list = []
             for perm_idx in range(permute_num):
                 #print("perm_idx: ", perm_idx)
                 #dim_size = max_var_num
                 perm_list = permutations[perm_idx]
-                print("batch: ", batch_idx, "perm: ", perm_idx, "perm_list: ", perm_list )
-                if perm_idx == 0:
-                    batch_idx += 1
+                print("batch: ", batch_idx, " perm: ", perm_idx, " perm_list: ", perm_list)
+                #if perm_idx == 0:
+                #    batch_idx += 1
                 inputs, targets, masks = batch
                 local_batch_size = inputs.shape[0]
                 #print("batch_size: ", local_batch_size)
@@ -234,6 +236,7 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
                 loss_list.append(total_loss.item())
                 total_loss.backward()
                 optimizer.step()
+
             average_loss = sum(loss_list) / len(loss_list)
             print("Average loss: ", average_loss)
         if i % 10 == 0:
