@@ -1,4 +1,4 @@
-def get_degrees(targets, d_model):
+def get_degrees(targets, category_num):
     degrees = []
     for target in targets:
         # declare a set
@@ -6,7 +6,7 @@ def get_degrees(targets, d_model):
         degree_list = target['max_degree']
         for deg in degree_list:
             degree_set.add(deg)
-        one_degree_list = [0] * d_model
+        one_degree_list = [0] * category_num
         for deg in degree_set:
             one_degree_list[deg] = 1
         degrees.append(one_degree_list)
