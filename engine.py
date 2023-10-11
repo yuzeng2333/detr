@@ -194,7 +194,7 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
             permutations.append(perm)   
         #batch_idx = 0
         for batch_idx, batch in enumerate(dataloader):
-            if args.early_stop and batch_idx == 10:
+            if args.early_stop and batch_idx == args.stop_batch_num:
                 break
             loss_list = []
             for perm_idx in range(permute_num):
