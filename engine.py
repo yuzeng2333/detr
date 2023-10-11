@@ -246,7 +246,7 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
             print("Average loss: ", average_loss)
         if i % 10 == 0:
         #if i % 1 == 0:
-            evaluate_max_degree(args, model, eval_dataloader, count_accuracy, device, False)
+            #evaluate_max_degree(args, model, eval_dataloader, count_accuracy, device, False)
         # save the parameters
         torch.save(model.state_dict(), param_file)
 
