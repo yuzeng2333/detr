@@ -318,6 +318,7 @@ def print_analysis_results(all_wrong_positions, all_wrong_values):
 
 
 def evaluate_max_degree(args, model, dataloader, count_accuracy, device, verbose=False):
+    return
     model.eval()  # Put the model in evaluation mode
     all_degree_accuracy = []
     all_wrong_positions = []
