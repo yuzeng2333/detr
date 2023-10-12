@@ -132,6 +132,10 @@ def main(args):
 
     device = torch.device(args.device)
 
+    # check the visibility of the cuda
+    print('cuda is available: ', torch.cuda.is_available())
+    print('cuda device count: ', torch.cuda.device_count())
+
     # fix the seed for reproducibility
     seed = args.seed + utils.get_rank()
     torch.manual_seed(seed)
