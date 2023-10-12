@@ -18,12 +18,12 @@ class DoubleTransformer(nn.Module):
             nn.TransformerEncoderLayer(self.d_model, nhead),
             #3
             2
-        ))
+        ), [0, 1, 2, 3])
         self.transformer_vertical_layer = nn.DataParallel(nn.TransformerEncoder(
             nn.TransformerEncoderLayer(self.d_model, nhead),
             #3
             2
-        ))
+        ), [0, 1, 2, 3]])
 
         # TODO: fix this hard coding
         loop_iter = args.loop_iter
