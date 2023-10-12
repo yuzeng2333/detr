@@ -5,6 +5,7 @@ Train and eval functions used in main.py
 import math
 import os
 import sys
+import time
 from typing import Iterable
 
 import torch
@@ -193,11 +194,14 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
             perm = random.sample(reference_perm, len(reference_perm))
             permutations.append(perm)   
         #batch_idx = 0
+        start_time = time.time()
         for batch_idx, batch in enumerate(dataloader):
+            data_loading_time = time.time() - start_time
             if args.early_stop and batch_idx == args.stop_batch_num:
                 break
             loss_list = []
             for perm_idx in range(permute_num):
+                perm_start_time = time.time()
                 #print("perm_idx: ", perm_idx)
                 #dim_size = max_var_num
                 perm_list = permutations[perm_idx]
@@ -212,6 +216,8 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
                 inputs = inputs.to(device)
                 masks = masks.to(device)
 
+                before_training_time = time.time()
+                data_preparation_time = before_training_time - perm_start_time
                 optimizer.zero_grad()
                 outputs = model(inputs, masks)
                 outputs = outputs.to('cpu')
@@ -241,6 +247,11 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
                 loss_list.append(total_loss.item())
                 total_loss.backward()
                 optimizer.step()
+                after_training_time = time.time()
+                training_time = after_training_time - before_training_time
+                print("===== data_loading_time:     ", data_loading_time)
+                print("===== data_preparation_time: ", data_preparation_time)
+                print("===== training_time:         ", training_time)
 
             average_loss = sum(loss_list) / len(loss_list)
             print("Average loss: ", average_loss)
