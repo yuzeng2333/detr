@@ -14,6 +14,7 @@ class DoubleTransformer(nn.Module):
         self.max_var_num = args.max_var_num
         self.pred_tokens = nn.Parameter(torch.randn(args.batch_size, args.max_var_num, 1))
 
+        """""
         self.transformer_horizontal_layer = nn.DataParallel(nn.TransformerEncoder(
             nn.TransformerEncoderLayer(self.d_model, nhead),
             #3
@@ -24,6 +25,18 @@ class DoubleTransformer(nn.Module):
             #3
             2
         ), [0, 1, 2, 3])
+        """""
+        
+        self.transformer_horizontal_layer = nn.TransformerEncoder(
+            nn.TransformerEncoderLayer(self.d_model, nhead),
+            #3
+            2
+        )
+        self.transformer_vertical_layer = nn.TransformerEncoder(
+            nn.TransformerEncoderLayer(self.d_model, nhead),
+            #3
+            2
+        )
 
         # TODO: fix this hard coding
         loop_iter = args.loop_iter

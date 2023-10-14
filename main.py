@@ -143,6 +143,7 @@ def main(args):
     random.seed(seed)
 
     model, criterion, count_accuracy = build_model(args)
+    model = torch.nn.DataParallel(model)
     model.to(device)
 
     model_without_ddp = model
