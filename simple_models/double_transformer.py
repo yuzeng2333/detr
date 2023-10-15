@@ -64,6 +64,8 @@ class DoubleTransformer(nn.Module):
         assert variable_number == self.max_var_num
         # concatenate the src and predict_tokens
         if use_pred_tokens:
+            print("src shape: ", src.shape)
+            print("pred_tokens shape: ", self.pred_tokens.shape)
             src = torch.cat((src, self.pred_tokens), dim=2)
 
         # map each number to its embedding
