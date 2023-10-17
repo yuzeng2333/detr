@@ -37,4 +37,4 @@ pnt:
 	python main.py --sel_model pointnet --invar_path ./datasets/invar_data/synthetic
  
 double:
-	python main.py --early_stop 1 --sel_model double --batch_size 8 --invar_path ./datasets/invar_data/synthetic_two --device cpu --enable_perm 1 --num_iterations 500 --perm_num 2
+	python main.py --early_stop 1 --sel_model double --batch_size 8 --gpu_num 4 --invar_path ./datasets/invar_data/synthetic_two --device cpu --enable_perm 1 --num_iterations 500 --perm_num 2
