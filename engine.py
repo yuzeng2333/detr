@@ -210,7 +210,7 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
                 #    batch_idx += 1
                 inputs, targets, masks = batch
                 local_batch_size = inputs.shape[0]
-                #print("batch_size: ", local_batch_size)
+                print("batch_size: ", local_batch_size)
                 # permute the inputs, masks and targets
                 inputs, masks, targets = perm_data(inputs, masks, targets, perm_list, d_model)    
                 inputs = inputs.to(device)
