@@ -13,7 +13,7 @@ class DoubleTransformer(nn.Module):
         self.batch_size = args.batch_size
         self.max_var_num = args.max_var_num
         assert args.batch_size % args.gpu_num == 0
-        self.pred_token_size = args.barch_size / args.gpu_num
+        self.pred_token_size = args.batch_size / args.gpu_num
         self.pred_tokens = nn.Parameter(torch.randn(self.pred_token_size, args.max_var_num, 1))
 
         """""
