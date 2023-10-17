@@ -28,6 +28,7 @@ def get_args_parser():
     parser.add_argument('--num_iterations', default=400, type=int)
     parser.add_argument('--loop_iter', default=512, type=int)
     parser.add_argument('--perm_num', default=25, type=int)
+    parser.add_argument('--gpu_num', default=1, type=int)
     parser.add_argument('--stop_batch_num', default=5, type=int)
     parser.add_argument('--max_var_degree', default=2, type=int)
     parser.add_argument('--enable_perm', default=0, type=int, help='if true, enable permutation')

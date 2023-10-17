@@ -12,7 +12,9 @@ class DoubleTransformer(nn.Module):
         self.num_classes = num_classes
         self.batch_size = args.batch_size
         self.max_var_num = args.max_var_num
-        self.pred_tokens = nn.Parameter(torch.randn(args.batch_size, args.max_var_num, 1))
+        assert args.batch_size % args.gpu_num == 0
+        self.pred_token_size = args.barch_size / args.gpu_num
+        self.pred_tokens = nn.Parameter(torch.randn(self.pred_token_size, args.max_var_num, 1))
 
         """""
         self.transformer_horizontal_layer = nn.DataParallel(nn.TransformerEncoder(
@@ -60,7 +62,7 @@ class DoubleTransformer(nn.Module):
         variable_number = src.shape[1]
         loop_iter = src.shape[2]
         d_model = self.d_model
-        #assert batch_size == self.batch_size
+        assert batch_size == self.pred_token_size
         assert variable_number == self.max_var_num
         # concatenate the src and predict_tokens
         if use_pred_tokens:
