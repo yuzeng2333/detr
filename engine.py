@@ -183,17 +183,11 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
     # print the length of the batches
     print("len(dataloader): ", len(dataloader) )
     for i in range(iteration):
-    #for i in range(2):
         print("Iteration: ", i)
         permutations = []
-        #if permute_num == 1:
-        #    permutations.append(reference_perm)
-        #    #permutations.append([2, 3, 4, 1, 0])
-        #else:
         while len(permutations) < permute_num:
             perm = random.sample(reference_perm, len(reference_perm))
             permutations.append(perm)   
-        #batch_idx = 0
         start_time = time.time()
         for batch_idx, batch in enumerate(dataloader):
             data_loading_time = time.time() - start_time
@@ -202,12 +196,8 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
             loss_list = []
             for perm_idx in range(permute_num):
                 perm_start_time = time.time()
-                #print("perm_idx: ", perm_idx)
-                #dim_size = max_var_num
                 perm_list = permutations[perm_idx]
                 print("batch: ", batch_idx, " perm: ", perm_idx, " perm_list: ", perm_list)
-                #if perm_idx == 0:
-                #    batch_idx += 1
                 inputs, targets, masks = batch
                 local_batch_size = inputs.shape[0]
                 # permute the inputs, masks and targets
@@ -220,7 +210,6 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
                 optimizer.zero_grad()
                 outputs = model(inputs, masks)
                 #outputs = outputs.to('cpu')
-                #loss = criterion(outputs.view(-1, outputs.size(-1)), targets.view(-1))
                 losses = criterion(args, outputs, targets)
                 # print loss and iteration numbers
                 if(print_loss == 1):
@@ -230,19 +219,7 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
                 # print the weights
                 if print_weights == 1:
                     print("weights: ", model.fc.weight)
-                # stop if loss is nan
-                #if torch.isnan(outputs['eq']).any() or torch.isnan(outputs['op']).any():        
-                #    print("Found NaN at index")
-                #    return
                 total_loss = sum(loss for loss in losses.values())
-                # print the all kinds of losses
-                #print("loss: ", loss)
-                # print loss_eq, loss_op and total_loss in a form
-                #print("{:<10.2f} {:<10.2f} {:<10.2f}".format(loss['loss_eq'].item(), loss['loss_op'].item(), total_loss.item()))
-                #print("{:<10.2f}".format(losses['loss'].item()))
-                #print("Eq loss: ", loss['loss_eq'].item())
-                #print("Op loss: ", loss['loss_op'].item())
-                #print("Total loss: ", total_loss.item())
                 loss_list.append(total_loss.item())
                 total_loss.backward()
                 optimizer.step()
@@ -255,7 +232,6 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
             average_loss = sum(loss_list) / len(loss_list)
             print("Average loss: ", average_loss)
         if i % 10 == 0:
-        #if i % 1 == 0:
             evaluate_max_degree(args, model, eval_dataloader, count_accuracy, device, False)
         # save the parameters
         torch.save(model.state_dict(), param_file)
