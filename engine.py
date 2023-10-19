@@ -211,7 +211,7 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
 
                 if measure_time:
                     before_training_time = time.time()
-                data_preparation_time = before_training_time - perm_start_time
+                    data_preparation_time = before_training_time - perm_start_time
                 optimizer.zero_grad()
                 with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA], record_shapes=True, use_cuda=True) as prof:
                     outputs = model(inputs, masks)
