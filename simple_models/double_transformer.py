@@ -19,28 +19,15 @@ class DoubleTransformer(nn.Module):
         self.pred_token_size = int(args.batch_size / args.gpu_num)
         self.pred_tokens = nn.Parameter(torch.randn(self.pred_token_size, args.max_var_num, 1, device=self.device))
 
-        """""
-        self.transformer_horizontal_layer = nn.DataParallel(nn.TransformerEncoder(
-            nn.TransformerEncoderLayer(self.d_model, nhead),
-            #3
-            2
-        ), [0, 1, 2, 3])
-        self.transformer_vertical_layer = nn.DataParallel(nn.TransformerEncoder(
-            nn.TransformerEncoderLayer(self.d_model, nhead),
-            #3
-            2
-        ), [0, 1, 2, 3])
-        """""
-        
         self.transformer_horizontal_layer = nn.TransformerEncoder(
             nn.TransformerEncoderLayer(self.d_model, nhead),
-            #3
-            2
+            3
+            #2
         )
         self.transformer_vertical_layer = nn.TransformerEncoder(
             nn.TransformerEncoderLayer(self.d_model, nhead),
-            #3
-            2
+            3
+            #2
         )
 
         # TODO: fix this hard coding
@@ -58,14 +45,15 @@ class DoubleTransformer(nn.Module):
 
 
     def forward(self, src, masks):
-        use_pred_tokens = True
+        use_pred_tokens = False
         # the shape of src is (batch_size, variable_number, loop_iter) (200, 5, 512)
         # get the first two dimension size of src
         batch_size = src.shape[0]
         variable_number = src.shape[1]
         loop_iter = src.shape[2]
         d_model = self.d_model
-        assert batch_size == self.pred_token_size
+        if use_pred_tokens:
+            assert batch_size == self.pred_token_size
         assert variable_number == self.max_var_num
         # concatenate the src and predict_tokens
         if use_pred_tokens:
