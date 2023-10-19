@@ -189,8 +189,8 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
             perm = random.sample(reference_perm, len(reference_perm))
             permutations.append(perm)   
         start_time = time.time()
+        training_time_list = []
         for batch_idx, batch in enumerate(dataloader):
-            data_loading_time = time.time() - start_time
             if args.early_stop and batch_idx == args.stop_batch_num:
                 break
             loss_list = []
@@ -225,9 +225,12 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
                 optimizer.step()
                 after_training_time = time.time()
                 training_time = after_training_time - before_training_time
-                print("===== data_loading_time:     ", data_loading_time)
-                print("===== data_preparation_time: ", data_preparation_time)
+                training_time_list.append(training_time)
+                # sum up the training time
+                all_training_time = sum(training_time_list)
                 print("===== training_time:         ", training_time)
+                print("===== All training_time:     ", all_training_time)
+                print("===== Total runing time:     ", time.time() - start_time)
 
             average_loss = sum(loss_list) / len(loss_list)
             print("Average loss: ", average_loss)

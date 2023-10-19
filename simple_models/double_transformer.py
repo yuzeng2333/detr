@@ -48,7 +48,7 @@ class DoubleTransformer(nn.Module):
     def get_embedding(self, num, d_model):
         # num is a single number, map it to [sin(x), sin(2x), ..., sin(512x)]
         # the shape of output is (1, d_model)
-        output = torch.zeros(d_model)
+        output = torch.zeros(d_model, device=self.device) 
         for i in range(d_model):
             output[i] = torch.sin(num * (i + 1))
         return output
@@ -76,8 +76,7 @@ class DoubleTransformer(nn.Module):
         if use_pred_tokens:
             extended_loop_iter += 1
   
-        src_extended = torch.zeros(batch_size, variable_number, extended_loop_iter, d_model)
-        src_extended = src_extended.to(self.device)
+        src_extended = torch.zeros(batch_size, variable_number, extended_loop_iter, d_model, device=self.device)
         for i in range(batch_size):
             for j in range(variable_number):
                 for k in range(extended_loop_iter):
