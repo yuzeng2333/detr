@@ -14,7 +14,7 @@ class DoubleTransformer(nn.Module):
         self.max_var_num = args.max_var_num
         assert args.batch_size % args.gpu_num == 0
         self.pred_token_size = int(args.batch_size / args.gpu_num)
-        self.pred_tokens = nn.Parameter(torch.randn(self.pred_token_size, args.max_var_num, 1))
+        self.pred_tokens = nn.Parameter(torch.randn(self.pred_token_size, args.max_var_num, 1, device=self.device))
 
         """""
         self.transformer_horizontal_layer = nn.DataParallel(nn.TransformerEncoder(
