@@ -78,11 +78,17 @@ class DoubleTransformer(nn.Module):
             extended_loop_iter += 1
   
         assert self.device.type == 'cuda'
-        src_extended = torch.zeros(batch_size, variable_number, extended_loop_iter, d_model, device=self.device)
-        for i in range(batch_size):
-            for j in range(variable_number):
-                for k in range(extended_loop_iter):
-                    src_extended[i][j][k] = self.get_embedding(src[i][j][k], d_model)
+        multiplier = torch.arange(1, d_model+1, device=self.device)
+        src_extended = src * multiplier
+        src_extended = torch.sin(src_extended)
+        # assert the last dimension size is d_model
+        assert src_extended.shape[-1] == d_model
+
+        #src_extended = torch.zeros(batch_size, variable_number, extended_loop_iter, d_model, device=self.device)
+        #for i in range(batch_size):
+        #    for j in range(variable_number):
+        #        for k in range(extended_loop_iter):
+        #            src_extended[i][j][k] = self.get_embedding(src[i][j][k], d_model)
 
         # merge the first two dimensions
         # now the shape is (batch_size * variable_number, loop_iter, d_model)
