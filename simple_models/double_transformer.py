@@ -5,8 +5,10 @@ from torch import nn
 class DoubleTransformer(nn.Module):
     def __init__(self, args, nhead=1, num_layers=6, num_classes=3):
         super(DoubleTransformer, self).__init__()
-        assert args.device.type == 'cuda'
         self.device = args.device
+        # check if the device str contains 'cuda'
+        if self.device[0:4] != 'cuda':
+            print ("Warning: the device str does not contain 'cuda'")
         self.d_model = args.d_model
         self.nhead = nhead
         self.num_layers = num_layers
@@ -77,9 +79,10 @@ class DoubleTransformer(nn.Module):
         if use_pred_tokens:
             extended_loop_iter += 1
   
-        assert self.device.type == 'cuda'
+        if self.device[0:4] != 'cuda':
+            print ("Warning: the device str does not contain 'cuda'")
         multiplier = torch.arange(1, d_model+1, device=self.device)
-        src_extended = src * multiplier
+        src_extended = src.unsqueeze(3) * multiplier
         src_extended = torch.sin(src_extended)
         # assert the last dimension size is d_model
         assert src_extended.shape[-1] == d_model
