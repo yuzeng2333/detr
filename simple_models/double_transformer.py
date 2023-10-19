@@ -5,6 +5,7 @@ from torch import nn
 class DoubleTransformer(nn.Module):
     def __init__(self, args, nhead=1, num_layers=6, num_classes=3):
         super(DoubleTransformer, self).__init__()
+        assert args.device.type == 'cuda'
         self.device = args.device
         self.d_model = args.d_model
         self.nhead = nhead
@@ -76,6 +77,7 @@ class DoubleTransformer(nn.Module):
         if use_pred_tokens:
             extended_loop_iter += 1
   
+        assert self.device.type == 'cuda'
         src_extended = torch.zeros(batch_size, variable_number, extended_loop_iter, d_model, device=self.device)
         for i in range(batch_size):
             for j in range(variable_number):

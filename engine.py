@@ -15,6 +15,7 @@ from datasets.panoptic_eval import PanopticEvaluator
 import random
 from itertools import permutations
 from collections import Counter
+from torch.profiler import profile, record_function, ProfilerActivity
 
 def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
                     data_loader: Iterable, optimizer: torch.optim.Optimizer,
@@ -208,7 +209,8 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
                 before_training_time = time.time()
                 data_preparation_time = before_training_time - perm_start_time
                 optimizer.zero_grad()
-                outputs = model(inputs, masks)
+                with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA], record_shapes=True, use_cuda=True) as prof:
+                    outputs = model(inputs, masks)
                 #outputs = outputs.to('cpu')
                 losses = criterion(args, outputs, targets)
                 # print loss and iteration numbers
