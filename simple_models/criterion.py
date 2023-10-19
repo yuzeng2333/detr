@@ -10,7 +10,8 @@ class DNN_CROSS_ENTROPY(nn.Module):
 
     def forward(self, args, outputs, targets):
         # flatten the first dimension of outputs
-        assert args.device.type == 'cuda'
+        if args.device[0:4] != 'cuda':
+            print ("Warning: the device str does not contain 'cuda'")
         outputs = outputs.view(-1, outputs.shape[-1])
         var_num = args.max_var_num
         d_model = self.d_model
