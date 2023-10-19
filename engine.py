@@ -183,20 +183,23 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
     print("-"*30)  # print line for separation
     # print the length of the batches
     print("len(dataloader): ", len(dataloader) )
+    measure_time = False
     for i in range(iteration):
         print("Iteration: ", i)
         permutations = []
         while len(permutations) < permute_num:
             perm = random.sample(reference_perm, len(reference_perm))
-            permutations.append(perm)   
-        start_time = time.time()
+            permutations.append(perm)
+        if measure_time:   
+            start_time = time.time()
         training_time_list = []
         for batch_idx, batch in enumerate(dataloader):
             if args.early_stop and batch_idx == args.stop_batch_num:
                 break
             loss_list = []
             for perm_idx in range(permute_num):
-                perm_start_time = time.time()
+                if measure_time:
+                    perm_start_time = time.time()
                 perm_list = permutations[perm_idx]
                 print("batch: ", batch_idx, " perm: ", perm_idx, " perm_list: ", perm_list)
                 inputs, targets, masks = batch
@@ -206,7 +209,8 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
                 inputs = inputs.to(device)
                 masks = masks.to(device)
 
-                before_training_time = time.time()
+                if measure_time:
+                    before_training_time = time.time()
                 data_preparation_time = before_training_time - perm_start_time
                 optimizer.zero_grad()
                 with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA], record_shapes=True, use_cuda=True) as prof:
@@ -225,14 +229,15 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
                 loss_list.append(total_loss.item())
                 total_loss.backward()
                 optimizer.step()
-                after_training_time = time.time()
-                training_time = after_training_time - before_training_time
-                training_time_list.append(training_time)
-                # sum up the training time
-                all_training_time = sum(training_time_list)
-                print("===== training_time:         ", training_time)
-                print("===== All training_time:     ", all_training_time)
-                print("===== Total runing time:     ", time.time() - start_time)
+                if measure_time:
+                    after_training_time = time.time()
+                    training_time = after_training_time - before_training_time
+                    training_time_list.append(training_time)
+                    # sum up the training time
+                    all_training_time = sum(training_time_list)
+                    print("===== training_time:         ", training_time)
+                    print("===== All training_time:     ", all_training_time)
+                    print("===== Total runing time:     ", time.time() - start_time)
 
             average_loss = sum(loss_list) / len(loss_list)
             print("Average loss: ", average_loss)
