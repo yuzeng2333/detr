@@ -18,16 +18,18 @@ class DoubleTransformer(nn.Module):
         assert args.batch_size % args.gpu_num == 0
         self.pred_token_size = int(args.batch_size / args.gpu_num)
         self.pred_tokens = nn.Parameter(torch.randn(self.pred_token_size, args.max_var_num, 1, device=self.device))
-
+        self.norm = nn.LayerNorm(self.d_model)
         self.transformer_horizontal_layer = nn.TransformerEncoder(
             nn.TransformerEncoderLayer(self.d_model, nhead),
-            3
+            3,
             #2
+            norm = self.norm
         )
         self.transformer_vertical_layer = nn.TransformerEncoder(
             nn.TransformerEncoderLayer(self.d_model, nhead),
-            3
+            3,
             #2
+            norm = self.norm
         )
 
         # TODO: fix this hard coding
@@ -75,12 +77,6 @@ class DoubleTransformer(nn.Module):
         # assert the last dimension size is d_model
         assert src_extended.shape[-1] == d_model
 
-        #src_extended = torch.zeros(batch_size, variable_number, extended_loop_iter, d_model, device=self.device)
-        #for i in range(batch_size):
-        #    for j in range(variable_number):
-        #        for k in range(extended_loop_iter):
-        #            src_extended[i][j][k] = self.get_embedding(src[i][j][k], d_model)
-
         # merge the first two dimensions
         # now the shape is (batch_size * variable_number, loop_iter, d_model)
         src_extended = src_extended.reshape(batch_size * variable_number, extended_loop_iter, d_model)
@@ -99,7 +95,8 @@ class DoubleTransformer(nn.Module):
 
         # apply the transformer layer to the vertical dimension (variable_number)
         # the shape of output is (batch_size, loop_iter, variable_number, d_model)
-        x_vertical1 = self.transformer_vertical_layer(x_horizontal4)
+        #x_vertical1 = self.transformer_vertical_layer(x_horizontal4)
+        x_vertical1 = x_horizontal4
 
         # reshape the output to (batch_size, loop_iter, variable_number, d_model)
         x_vertical1 = x_vertical1.reshape(batch_size, extended_loop_iter, variable_number, d_model)
@@ -113,4 +110,4 @@ class DoubleTransformer(nn.Module):
             pred_tokens = x_vertical1[:, -1, :, :]
             # the shape of pred_tokens is (batch_size, variable_number, d_model)
             output = self.linear(pred_tokens)
-        return output
+        return x_avg

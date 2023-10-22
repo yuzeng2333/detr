@@ -213,8 +213,16 @@ def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, o
                     before_training_time = time.time()
                     data_preparation_time = before_training_time - perm_start_time
                 optimizer.zero_grad()
-                with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA], record_shapes=True, use_cuda=True) as prof:
-                    outputs = model(inputs, masks)
+                outputs = model(inputs, masks)
+
+                # check if shuffle the last dimenion of inputs, the outputs should be the same
+                inputs_shuffle = torch.zeros(inputs.size())
+                shuffle_order = torch.randperm(inputs.size(2))
+                for i in range(inputs.size(0)):
+                    for j in range(inputs.size(1)):
+                        inputs_shuffle[i, j] = inputs[i, j, shuffle_order]
+                outputs_shuffle = model(inputs_shuffle, masks)
+
                 #outputs = outputs.to('cpu')
                 losses = criterion(args, outputs, targets)
                 # print loss and iteration numbers
