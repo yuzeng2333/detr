@@ -157,9 +157,9 @@ def evaluate_old(model, criterion, postprocessors, data_loader, base_ds, device,
 def train_invar(model, dataloader, eval_dataloader, count_accuracy, criterion, optimizer, device, args):
     param_file = args.save_path
     # if the saved parameters exist, load it
-    if os.path.isfile(param_file):
-        print("Loading saved parameters...")
-        model.load_state_dict(torch.load(param_file))
+    #if os.path.isfile(param_file):
+    #    print("Loading saved parameters...")
+    #    model.load_state_dict(torch.load(param_file))
     model.train()
     if args.early_stop:
         iteration = 1
