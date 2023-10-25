@@ -20,16 +20,16 @@ class DoubleTransformer(nn.Module):
         self.pred_tokens = nn.Parameter(torch.randn(self.pred_token_size, args.max_var_num, 1, device=self.device))
         self.norm = nn.LayerNorm(self.d_model)
         self.transformer_horizontal_layer = nn.TransformerEncoder(
-            nn.TransformerEncoderLayer(self.d_model, nhead),
-            3,
+            nn.TransformerEncoderLayer(self.d_model, nhead)
+            ,3
             #2
-            norm = self.norm
+            ,norm = self.norm
         )
         self.transformer_vertical_layer = nn.TransformerEncoder(
-            nn.TransformerEncoderLayer(self.d_model, nhead),
-            3,
+            nn.TransformerEncoderLayer(self.d_model, nhead)
+            ,3
             #2
-            norm = self.norm
+            ,norm = self.norm
         )
 
         # TODO: fix this hard coding
@@ -110,4 +110,4 @@ class DoubleTransformer(nn.Module):
             pred_tokens = x_vertical1[:, -1, :, :]
             # the shape of pred_tokens is (batch_size, variable_number, d_model)
             output = self.linear(pred_tokens)
-        return x_avg
+        return output
