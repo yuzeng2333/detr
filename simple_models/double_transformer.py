@@ -42,7 +42,8 @@ class DoubleTransformer(nn.Module):
         # the shape of output is (1, d_model)
         output = torch.zeros(d_model, device=self.device) 
         for i in range(d_model):
-            output[i] = torch.sin(num * (i + 1))
+            #output[i] = torch.sin(num * (i + 1))
+            output[i] = num
         return output
 
 
