@@ -23,13 +23,13 @@ class DoubleTransformer(nn.Module):
             nn.TransformerEncoderLayer(self.d_model, nhead)
             ,3
             #2
-            ,norm = self.norm
+            #,norm = self.norm
         )
         self.transformer_vertical_layer = nn.TransformerEncoder(
             nn.TransformerEncoderLayer(self.d_model, nhead)
             ,3
             #2
-            ,norm = self.norm
+            #,norm = self.norm
         )
 
         # TODO: fix this hard coding
@@ -72,9 +72,10 @@ class DoubleTransformer(nn.Module):
   
         if self.device[0:4] != 'cuda':
             print ("Warning: the device str does not contain 'cuda'")
-        multiplier = torch.arange(1, d_model+1, device=self.device)
+        #multiplier = torch.arange(1, d_model+1, device=self.device)
+        multiplier = torch.ones(d_model, device=self.device)
         src_extended = src.unsqueeze(3) * multiplier
-        src_extended = torch.sin(src_extended)
+        #src_extended = torch.sin(src_extended)
         # assert the last dimension size is d_model
         assert src_extended.shape[-1] == d_model
 
